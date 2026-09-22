@@ -1,0 +1,3765 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dune: Adventures in the Imperium — Character Generator</title>
+<style>
+    :root {
+        --sand-bg: #f7f2e7;
+        --sand-surface: #fdfbf7;
+        --card-bg: #ffffff;
+        --border-color: #d8cbbb;
+        --border-gold: #c88a38;
+        --spice-gold: #c88a38;
+        --spice-ember: #bc4726;
+        --spice-dark: #7a3818;
+        --imperial-dark: #1b1c1e;
+        --imperial-surface: #27282b;
+        --text-main: #2b2825;
+        --text-muted: #6e655b;
+        --success: #2e7d32;
+        --danger: #c62828;
+        --warning: #ef6c00;
+    }
+
+    * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Palatino Linotype", Georgia, serif;
+        background-color: var(--sand-bg);
+        color: var(--text-main);
+        line-height: 1.5;
+        padding: 0;
+        margin: 0;
+    }
+
+    /* Top Imperial Header */
+    .imperial-banner {
+        background: linear-gradient(135deg, #18191b 0%, #2f251d 100%);
+        border-bottom: 3px solid var(--spice-gold);
+        color: #f5eedc;
+        padding: 20px 32px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 16px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    .banner-title h1 {
+        font-family: Georgia, "Palatino Linotype", serif;
+        color: #e5b95c;
+        font-size: 1.8rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .banner-title p {
+        color: #c7b9a5;
+        font-size: 0.9rem;
+        margin-top: 4px;
+        font-style: italic;
+    }
+
+    .banner-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 0.88rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-gold {
+        background: linear-gradient(135deg, var(--spice-gold), #b37324);
+        color: #ffffff;
+        border-color: #9c6019;
+    }
+    .btn-gold:hover {
+        background: linear-gradient(135deg, #d49542, #c88a38);
+        box-shadow: 0 2px 8px rgba(200, 138, 56, 0.4);
+    }
+
+    .btn-outline {
+        background: transparent;
+        color: #e5b95c;
+        border-color: #c88a38;
+    }
+    .btn-outline:hover {
+        background: rgba(200, 138, 56, 0.15);
+    }
+
+    .btn-secondary {
+        background: #e8ded0;
+        color: #4a3f33;
+        border-color: var(--border-color);
+    }
+    .btn-secondary:hover {
+        background: #ded1c0;
+    }
+
+    /* Main Container & Layout */
+    .app-container {
+        max-width: 1300px;
+        margin: 24px auto;
+        padding: 0 20px;
+        display: grid;
+        grid-template-columns: 1fr 340px;
+        gap: 24px;
+    }
+
+    @media (max-width: 1024px) {
+        .app-container {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Mode Navigation Tabs */
+    .nav-tabs {
+        display: flex;
+        gap: 8px;
+        background: #eae2d3;
+        padding: 6px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border: 1px solid var(--border-color);
+        overflow-x: auto;
+    }
+
+    .nav-tab {
+        padding: 8px 18px;
+        border-radius: 6px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .nav-tab.active {
+        background: var(--card-bg);
+        color: var(--spice-dark);
+        box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        border: 1px solid var(--border-gold);
+    }
+
+    /* Wizard Step Bar */
+    .wizard-steps {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+
+    .wizard-step-btn {
+        flex: 1;
+        min-width: 110px;
+        text-align: center;
+        padding: 8px 6px;
+        background: #eee6d8;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .wizard-step-btn.active {
+        background: var(--spice-gold);
+        color: #ffffff;
+        border-color: var(--spice-gold);
+    }
+
+    .wizard-step-btn.completed {
+        background: #e1d8c7;
+        color: var(--text-main);
+        border-color: #b5a997;
+    }
+
+    /* Cards & Panels */
+    .card {
+        background: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 24px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+
+    .card-title {
+        font-family: Georgia, serif;
+        font-size: 1.25rem;
+        color: var(--spice-dark);
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1.5px solid #ece4d4;
+        padding-bottom: 8px;
+    }
+
+    /* Form Inputs */
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 700;
+        margin-bottom: 6px;
+        color: var(--text-main);
+    }
+
+    .form-help {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        margin-top: 4px;
+    }
+
+    input[type="text"], input[type="number"], select, textarea {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        background: #faf8f5;
+        font-family: inherit;
+        font-size: 0.9rem;
+        color: var(--text-main);
+        transition: border-color 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+        outline: none;
+        border-color: var(--spice-gold);
+        background: #ffffff;
+        box-shadow: 0 0 0 2px rgba(200, 138, 56, 0.2);
+    }
+
+    .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+
+    .grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+        .grid-2, .grid-3 {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Skill Allocation Card */
+    .skill-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 10px 14px;
+        background: #faf7f2;
+        border: 1px solid #e8decb;
+        border-radius: 6px;
+        margin-bottom: 8px;
+    }
+
+    .skill-info {
+        flex: 1;
+    }
+
+    .skill-name {
+        font-weight: 700;
+        font-size: 0.95rem;
+    }
+
+    .skill-tag {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        border-radius: 4px;
+        margin-left: 6px;
+        font-weight: 600;
+    }
+
+    .skill-tag-primary {
+        background: #ffd8a8;
+        color: #7a3818;
+    }
+
+    .skill-tag-secondary {
+        background: #d0ebff;
+        color: #1864ab;
+    }
+
+    .counter-control {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .counter-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 6px;
+        border: 1px solid var(--border-color);
+        background: #ffffff;
+        font-weight: bold;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .counter-btn:hover {
+        background: #f0e6d6;
+    }
+
+    .counter-val {
+        font-size: 1.2rem;
+        font-weight: bold;
+        width: 28px;
+        text-align: center;
+        color: var(--spice-ember);
+    }
+
+    .budget-bar {
+        background: #e8decb;
+        border-radius: 6px;
+        height: 10px;
+        overflow: hidden;
+        margin-top: 8px;
+        margin-bottom: 16px;
+    }
+
+    .budget-fill {
+        height: 100%;
+        background: var(--spice-gold);
+        transition: width 0.3s;
+    }
+
+    .budget-fill.exact {
+        background: var(--success);
+    }
+
+    .budget-fill.over {
+        background: var(--danger);
+    }
+
+    /* Badges & Tags */
+    .badge {
+        display: inline-block;
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        background: #eee6d8;
+        color: #4a3f33;
+        border: 1px solid #d9cdbd;
+    }
+
+    .badge-quality {
+        background: #fff3bf;
+        color: #8f5b00;
+        border-color: #ffd43b;
+    }
+
+    .badge-tangible {
+        background: #d3f9d8;
+        color: #2b8a3e;
+        border-color: #b2f2bb;
+    }
+
+    .badge-intangible {
+        background: #e7f5ff;
+        color: #1971c2;
+        border-color: #a5d8ff;
+    }
+
+    /* Sidebar Checklist */
+    .audit-card {
+        background: #ffffff;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 18px;
+        position: sticky;
+        top: 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    .audit-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 0.84rem;
+        padding: 6px 0;
+        border-bottom: 1px solid #f2ece1;
+    }
+
+    .audit-item:last-child {
+        border-bottom: none;
+    }
+
+    .audit-status {
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .status-pass {
+        color: var(--success);
+    }
+
+    .status-fail {
+        color: var(--danger);
+    }
+
+    /* Printable Sheet Container */
+    .sheet-view {
+        background: #ffffff;
+        border: 2px solid var(--border-color);
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    }
+
+    .sheet-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        border-bottom: 2px solid var(--spice-gold);
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+    }
+
+    .sheet-name {
+        font-family: Georgia, serif;
+        font-size: 1.8rem;
+        font-weight: bold;
+        color: var(--imperial-dark);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .sheet-concept {
+        font-style: italic;
+        color: var(--spice-dark);
+        font-size: 0.95rem;
+    }
+
+    .sheet-meta-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 8px 16px;
+        background: #faf7f0;
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 16px;
+        border: 1px solid #eadecf;
+        font-size: 0.85rem;
+    }
+
+    .table-dune {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 18px;
+        font-size: 0.88rem;
+    }
+
+    .table-dune th {
+        background: #f3ecd9;
+        text-align: left;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid var(--border-color);
+        color: var(--spice-dark);
+    }
+
+    .table-dune td {
+        padding: 8px 10px;
+        border-bottom: 1px solid #eee7db;
+    }
+
+    /* Print Styles */
+    @media print {
+        body {
+            background: #ffffff;
+        }
+        .imperial-banner, .nav-tabs, .wizard-steps, .audit-card, .btn-no-print {
+            display: none !important;
+        }
+        .app-container {
+            grid-template-columns: 1fr;
+            margin: 0;
+            padding: 0;
+            max-width: 100%;
+        }
+        .sheet-view {
+            border: none;
+            box-shadow: none;
+            padding: 0;
+        }
+    }
+</style>
+</head>
+<body>
+
+<!-- Imperial Top Banner -->
+<header class="imperial-banner">
+    <div class="banner-title">
+        <h1>Dune: Adventures in the Imperium</h1>
+        <p>2d20 System Character Generator & Sheet Architect</p>
+    </div>
+    <div class="banner-actions btn-no-print">
+        <button class="btn btn-gold" onclick="generateRandomPC()">🎲 Instant Random PC</button>
+        <button class="btn btn-outline" onclick="printSheet()">🖨️ Print / Save PDF</button>
+    </div>
+</header>
+
+<div class="app-container">
+    <!-- Main Content Area -->
+    <main>
+        <!-- Mode Tabs -->
+        <div class="nav-tabs btn-no-print">
+            <button class="nav-tab active" onclick="switchMode('wizard')">🧙 Character Creator Wizard</button>
+            <button class="nav-tab" onclick="switchMode('random')">🎲 Random Generator</button>
+            <button class="nav-tab" onclick="switchMode('npc')">👥 Supporting NPC Generator</button>
+            <button class="nav-tab" onclick="switchMode('sheet')">📄 Character Sheet Preview</button>
+            <button class="nav-tab" onclick="switchMode('vault')">📂 Character Vault</button>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- MODE 1: CHARACTER CREATOR WIZARD -->
+        <!-- ============================================== -->
+        <div id="mode-wizard">
+            <!-- Step Navigation -->
+            <div class="wizard-steps btn-no-print">
+                <button class="wizard-step-btn active" onclick="goToStep(1)">1. Concept</button>
+                <button class="wizard-step-btn" onclick="goToStep(2)">2. Archetype</button>
+                <button class="wizard-step-btn" onclick="goToStep(3)">3. Skills & Focuses</button>
+                <button class="wizard-step-btn" onclick="goToStep(4)">4. Talents</button>
+                <button class="wizard-step-btn" onclick="goToStep(5)">5. Drives</button>
+                <button class="wizard-step-btn" onclick="goToStep(6)">6. Assets</button>
+                <button class="wizard-step-btn" onclick="goToStep(7)">7. Ambition</button>
+                <button class="wizard-step-btn" onclick="goToStep(8)">8. Preview</button>
+            </div>
+
+            <!-- STEP 1: CONCEPT & FACTION -->
+            <div id="step-1" class="wizard-step-panel">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Step 1: Identity & Allegiance</span>
+                        <button class="btn btn-secondary" style="font-size: 0.78rem;" onclick="suggestName()">🎲 Roll Dune Name</button>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Character Name</label>
+                            <input type="text" id="w-name" oninput="updateChar('name', this.value)">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Faction Affiliation</label>
+                            <select id="w-faction" onchange="onFactionChange(this.value)"></select>
+                        </div>
+                    </div>
+
+                    <div id="w-faction-info" style="background: #faf5eb; border: 1px solid #e5d8c3; padding: 12px; border-radius: 6px; margin-bottom: 16px; font-size: 0.85rem;"></div>
+
+                    <div class="form-group">
+                        <label class="form-label">Concept Summary</label>
+                        <input type="text" id="w-concept" oninput="updateChar('concept', this.value)" placeholder="E.g., Cunning spymaster serving House Atreides">
+                    </div>
+
+                    <div class="grid-3">
+                        <div class="form-group">
+                            <label class="form-label">House Allegiance</label>
+                            <select id="w-house" onchange="updateChar('house', this.value)"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Homeworld</label>
+                            <select id="w-homeworld" onchange="updateChar('homeworld', this.value)"></select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">House Role</label>
+                            <select id="w-role" onchange="updateChar('house_role', this.value)"></select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Personal Trait</label>
+                        <select id="w-trait" onchange="updateChar('personal_trait', this.value)"></select>
+                    </div>
+
+                    <div style="text-align: right; margin-top: 16px;">
+                        <button class="btn btn-gold" onclick="goToStep(2)">Next: Choose Archetype →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2: ARCHETYPE -->
+            <div id="step-2" class="wizard-step-panel" style="display: none;">
+                <div class="card">
+                    <div class="card-title">Step 2: Archetype Selection</div>
+                    <div class="form-group">
+                        <label class="form-label">Select Archetype</label>
+                        <select id="w-archetype" onchange="onArchetypeChange(this.value)"></select>
+                    </div>
+
+                    <div id="w-arch-details" style="background: #faf7f2; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; margin-bottom: 16px;"></div>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                        <button class="btn btn-secondary" onclick="goToStep(1)">← Back to Concept</button>
+                        <button class="btn btn-gold" onclick="goToStep(3)">Next: Allocate Skills →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3: SKILLS & FOCUSES -->
+            <div id="step-3" class="wizard-step-panel" style="display: none;">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Step 3: Skills Allocation</span>
+                        <span id="skill-budget-badge" class="badge">Allocated: 28 / 28</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 8px;">
+                        Base: Primary skill at 6, Secondary at 5, others at 4. Distribute 5 points freely (Min 4, Max 8, Total must equal exactly 28).
+                    </p>
+
+                    <div class="budget-bar">
+                        <div id="budget-fill" class="budget-fill exact" style="width: 100%;"></div>
+                    </div>
+
+                    <div id="skills-container"></div>
+
+                    <div class="card-title" style="margin-top: 24px;">Step 4: Focuses (Select 4)</div>
+                    <p id="primary-focus-hint" style="font-size: 0.85rem; color: var(--spice-dark); margin-bottom: 12px; font-weight: 600;"></p>
+                    <div id="focuses-container"></div>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                        <button class="btn btn-secondary" onclick="goToStep(2)">← Back to Archetype</button>
+                        <button class="btn btn-gold" onclick="goToStep(4)">Next: Choose Talents →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 4: TALENTS -->
+            <div id="step-4" class="wizard-step-panel" style="display: none;">
+                <div class="card">
+                    <div class="card-title">Step 5: Talents (Select 3)</div>
+                    <div id="talent-faction-note" style="background: #faf5eb; border: 1px solid #e5d8c3; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 0.85rem;"></div>
+
+                    <div id="talents-container"></div>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                        <button class="btn btn-secondary" onclick="goToStep(3)">← Back to Skills</button>
+                        <button class="btn btn-gold" onclick="goToStep(5)">Next: Assign Drives →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 5: DRIVES & STATEMENTS -->
+            <div id="step-5" class="wizard-step-panel" style="display: none;">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Step 6: Drives & Statements</span>
+                        <span id="drives-status-badge" class="badge">Unique Values Check</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+                        Rank your 5 drives by assigning the ratings <strong>8, 7, 6, 5, and 4</strong> (each value used exactly once). Provide a Drive Statement for your 3 highest drives (8, 7, 6).
+                    </p>
+
+                    <div class="grid-2">
+                        <div>
+                            <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--spice-dark);">Drive Scores</h4>
+                            <div id="drives-score-container"></div>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 0.95rem; margin-bottom: 10px; color: var(--spice-dark);">Drive Statements (Ratings 8, 7, 6)</h4>
+                            <div id="drive-statements-container"></div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="goToStep(4)">← Back to Talents</button>
+                        <button class="btn btn-gold" onclick="goToStep(6)">Next: Choose Assets →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 6: ASSETS -->
+            <div id="step-6" class="wizard-step-panel" style="display: none;">
+                <div class="card">
+                    <div class="card-title">
+                        <span>Step 7: Starting Assets (Choose 3)</span>
+                        <span id="asset-tangible-badge" class="badge">Tangible Check</span>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+                        Your character starts play with 3 assets. <strong>At least one must be Tangible</strong> (a physical weapon, tool, or protective suit).
+                    </p>
+
+                    <div id="assets-container"></div>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                        <button class="btn btn-secondary" onclick="goToStep(5)">← Back to Drives</button>
+                        <button class="btn btn-gold" onclick="goToStep(7)">Next: Ambition & Details →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 7: AMBITION & DETAILS -->
+            <div id="step-7" class="wizard-step-panel" style="display: none;">
+                <div class="card">
+                    <div class="card-title">Step 8: Ambition & Finishing Touches</div>
+                    <div id="highest-drive-hint" style="background: #faf5eb; border: 1px solid #e5d8c3; padding: 10px; border-radius: 6px; margin-bottom: 16px; font-size: 0.85rem;"></div>
+
+                    <div class="form-group">
+                        <label class="form-label">Ambition Goal (Linked to Highest Drive)</label>
+                        <select id="w-ambition-select" onchange="onAmbitionSelect(this.value)"></select>
+                        <input type="text" id="w-ambition-text" style="margin-top: 6px;" oninput="updateChar('ambition', this.value)">
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Appearance</label>
+                            <textarea id="w-appearance" rows="3" oninput="updateChar('appearance', this.value)"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Personality</label>
+                            <textarea id="w-personality" rows="3" oninput="updateChar('personality', this.value)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Relationships & Allies</label>
+                            <textarea id="w-relationships" rows="3" oninput="updateChar('relationships', this.value)"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Notes & Background</label>
+                            <textarea id="w-notes" rows="3" oninput="updateChar('notes', this.value)"></textarea>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; justify-content: space-between; margin-top: 16px;">
+                        <button class="btn btn-secondary" onclick="goToStep(6)">← Back to Assets</button>
+                        <button class="btn btn-gold" onclick="goToStep(8)">Review Character Sheet →</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 8: PREVIEW & ACTIONS -->
+            <div id="step-8" class="wizard-step-panel" style="display: none;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                    <button class="btn btn-secondary" onclick="goToStep(7)">← Back to Ambition</button>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn btn-outline" onclick="downloadJSON()">💾 Download JSON</button>
+                        <button class="btn btn-outline" onclick="downloadMarkdown()">📝 Download Markdown</button>
+                        <button class="btn btn-gold" onclick="printSheet()">🖨️ Print Sheet</button>
+                    </div>
+                </div>
+                <div id="wizard-sheet-view" class="sheet-view"></div>
+            </div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- MODE 2: RANDOM GENERATOR -->
+        <!-- ============================================== -->
+        <div id="mode-random" style="display: none;">
+            <div class="card">
+                <div class="card-title">🎲 Instant Random Character Generator</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">
+                    Generate a fully rule-compliant player character with matching archetype, talents, focuses, drives, and gear.
+                </p>
+
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">Faction Filter</label>
+                        <select id="rand-faction"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Archetype Filter</label>
+                        <select id="rand-archetype"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">House Allegiance</label>
+                        <select id="rand-house"></select>
+                    </div>
+                </div>
+
+                <button class="btn btn-gold" style="width: 100%; padding: 10px;" onclick="executeRandomGen()">✨ Roll New Character</button>
+            </div>
+
+            <div id="random-sheet-view" class="sheet-view"></div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- MODE 3: SUPPORTING NPC GENERATOR -->
+        <!-- ============================================== -->
+        <div id="mode-npc" style="display: none;">
+            <div class="card">
+                <div class="card-title">👥 Supporting NPC Generator (Core Rules p. 145-146)</div>
+                <div class="grid-3">
+                    <div class="form-group">
+                        <label class="form-label">NPC Tier</label>
+                        <select id="npc-tier">
+                            <option value="minor">Minor Supporting Character (1 Drive rating, 1 focus, 1 asset)</option>
+                            <option value="notable">Notable Supporting Character (Costs 3 Momentum, 1 talent, 2 assets)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Role Template</label>
+                        <select id="npc-role">
+                            <option value="House Guard">House Guard (Battle / Blade)</option>
+                            <option value="Ornithopter Pilot">Ornithopter Pilot (Move / Shield)</option>
+                            <option value="House Diplomat">House Diplomat (Communicate / Contract)</option>
+                            <option value="Sietch Guide">Sietch Guide (Move / Stillsuit)</option>
+                            <option value="Cryptographer">Cryptographer (Understand / Filmbook)</option>
+                            <option value="Field Medic">Field Medic (Understand / Snooper)</option>
+                            <option value="Infiltrator Scout">Infiltrator Scout (Discipline / Bodkin)</option>
+                            <option value="Quartermaster">Quartermaster (Communicate / CHOAM Permit)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">House</label>
+                        <select id="npc-house"></select>
+                    </div>
+                </div>
+
+                <button class="btn btn-gold" style="width: 100%; padding: 10px;" onclick="executeNPCGen()">⚔️ Generate Supporting NPC</button>
+            </div>
+
+            <div id="npc-sheet-view" class="sheet-view"></div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- MODE 4: FULL SHEET PREVIEW -->
+        <!-- ============================================== -->
+        <div id="mode-sheet" style="display: none;">
+            <div style="display: flex; justify-content: flex-end; gap: 8px; margin-bottom: 16px;" class="btn-no-print">
+                <button class="btn btn-outline" onclick="downloadJSON()">💾 Download JSON</button>
+                <button class="btn btn-outline" onclick="downloadMarkdown()">📝 Download Markdown</button>
+                <button class="btn btn-gold" onclick="printSheet()">🖨️ Print / Save PDF</button>
+            </div>
+            <div id="standalone-sheet-view" class="sheet-view"></div>
+        </div>
+
+        <!-- ============================================== -->
+        <!-- MODE 5: VAULT / IMPORT-EXPORT -->
+        <!-- ============================================== -->
+        <div id="mode-vault" style="display: none;">
+            <div class="card">
+                <div class="card-title">📂 Character Vault & File Management</div>
+
+                <div class="form-group">
+                    <label class="form-label">Import Character from JSON File</label>
+                    <input type="file" id="vault-file-input" accept=".json" onchange="importJSON(event)">
+                </div>
+
+                <div style="display: flex; gap: 12px; margin-top: 20px;">
+                    <button class="btn btn-gold" onclick="downloadJSON()">💾 Save Active Character to File (.json)</button>
+                    <button class="btn btn-secondary" onclick="downloadMarkdown()">📝 Export to Markdown (.md)</button>
+                    <button class="btn btn-secondary" onclick="downloadHTML()">📄 Export Standalone HTML Sheet</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Sidebar Compliance Audit Panel -->
+    <aside class="btn-no-print">
+        <div class="audit-card">
+            <h3 style="font-family: Georgia, serif; color: var(--spice-dark); font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1.5px solid #eae2d3; padding-bottom: 6px;">
+                ⚖️ 2d20 Rulebook Audit
+            </h3>
+            <div id="audit-list"></div>
+            <div id="audit-summary" style="margin-top: 14px; text-align: center; font-weight: bold; font-size: 0.95rem;"></div>
+        </div>
+    </aside>
+</div>
+
+<!-- EMBEDDED CANONICAL DUNE DATASET -->
+<script>
+const DUNE_DATA = {
+  "archetypes": {
+    "Duelist": {
+      "name": "Duelist",
+      "primary_skill": "Battle",
+      "secondary_skill": "Move",
+      "suggested_focuses": [
+        "Dueling",
+        "Short Blades"
+      ],
+      "suggested_talent": "The Slow Blade",
+      "description": "Mastery of the blade is a prized skill in the Imperium. Champions, favored gladiators, and bodyguard tutors.",
+      "drive_advice": "Believers that might makes right, feeling Justice is enacted by the blade or Power is proven in single combat."
+    },
+    "Sergeant": {
+      "name": "Sergeant",
+      "primary_skill": "Battle",
+      "secondary_skill": "Communicate",
+      "suggested_focuses": [
+        "Long Blades",
+        "Strategy"
+      ],
+      "suggested_talent": "Master-at-Arms",
+      "description": "Experienced combat leaders who command soldiers in the field, drill house guards, and lead tactical squads.",
+      "drive_advice": "Duty and loyalty to the House and their unit; pride in hard discipline."
+    },
+    "Tactician": {
+      "name": "Tactician",
+      "primary_skill": "Battle",
+      "secondary_skill": "Understand",
+      "suggested_focuses": [
+        "Combat Awareness",
+        "Tactics"
+      ],
+      "suggested_talent": "Decisive Action",
+      "description": "Planners of skirmishes and wars, reading the battlefield like a chessboard and anticipating enemy moves.",
+      "drive_advice": "Truth of battle calculus and Power through decisive positioning."
+    },
+    "Warrior": {
+      "name": "Warrior",
+      "primary_skill": "Battle",
+      "secondary_skill": "Discipline",
+      "suggested_focuses": [
+        "Dirty Fighting",
+        "Long Blades"
+      ],
+      "suggested_talent": "To Fight Someone Is to Know Them",
+      "description": "Grit-tested frontline combatants, veteran shock troopers, and steadfast defenders of their House.",
+      "drive_advice": "Faith in their training, Duty to their comrades, or relentless pursuit of Justice."
+    },
+    "Commander": {
+      "name": "Commander",
+      "primary_skill": "Communicate",
+      "secondary_skill": "Battle",
+      "suggested_focuses": [
+        "Inspiration",
+        "Leadership"
+      ],
+      "suggested_talent": "Specialist (Warfare Assets)",
+      "description": "Inspirational commanders, generals, and leaders who direct grand endeavors and inspire loyalty under fire.",
+      "drive_advice": "Power over armies, Duty to the noble banner, and unwavering Faith in ultimate victory."
+    },
+    "Courtier": {
+      "name": "Courtier",
+      "primary_skill": "Communicate",
+      "secondary_skill": "Understand",
+      "suggested_focuses": [
+        "Charm",
+        "Musical Instrument"
+      ],
+      "suggested_talent": "Subtle Words",
+      "description": "Charming aristocrats, socialites, entertainers, and salon manipulators adept in Imperial etiquette and kanly.",
+      "drive_advice": "Power wielded in drawing rooms, uncovering the hidden Truth of court secrets."
+    },
+    "Envoy": {
+      "name": "Envoy",
+      "primary_skill": "Communicate",
+      "secondary_skill": "Move",
+      "suggested_focuses": [
+        "Diplomacy",
+        "Persuasion"
+      ],
+      "suggested_talent": "Binding Promise",
+      "description": "Diplomats, ambassadors, negotiators, and arbitrators sent across worlds to forge treaties and settle disputes.",
+      "drive_advice": "Duty to the realm, Justice in diplomacy, and the delicate balance of Power."
+    },
+    "Steward": {
+      "name": "Steward",
+      "primary_skill": "Communicate",
+      "secondary_skill": "Discipline",
+      "suggested_focuses": [
+        "Leadership",
+        "Negotiation"
+      ],
+      "suggested_talent": "Stirring Rhetoric",
+      "description": "Governors, treasurers, and major-domos managing territories, logistics, and personnel with firm dignity.",
+      "drive_advice": "Devotion to Duty and the orderly execution of justice and administrative Power."
+    },
+    "Analyst": {
+      "name": "Analyst",
+      "primary_skill": "Discipline",
+      "secondary_skill": "Understand",
+      "suggested_focuses": [
+        "Attention to Detail",
+        "Composure"
+      ],
+      "suggested_talent": "Intense Study",
+      "description": "Methodical minds who filter signal from noise, evaluate risks, and sift intelligence with serene composure.",
+      "drive_advice": "Pure Truth through verification and quiet Duty to their superiors."
+    },
+    "Herald": {
+      "name": "Herald",
+      "primary_skill": "Discipline",
+      "secondary_skill": "Communicate",
+      "suggested_focuses": [
+        "Command",
+        "Composure"
+      ],
+      "suggested_talent": "Rigorous Control",
+      "description": "The formal voice of a House, delivering proclamations, presiding over rituals, and enforcing protocol.",
+      "drive_advice": "Unyielding Duty to ancestral rank, Faith in ancient tradition and Imperial order."
+    },
+    "Infiltrator": {
+      "name": "Infiltrator",
+      "primary_skill": "Discipline",
+      "secondary_skill": "Move",
+      "suggested_focuses": [
+        "Infiltration",
+        "Precision"
+      ],
+      "suggested_talent": "Subtle Step",
+      "description": "Ghosts and covert operatives who slip past perimeter shields, pick locks, and plant surveillance devices.",
+      "drive_advice": "Duty to the shadows, or Justice delivered where open law cannot reach."
+    },
+    "Protector": {
+      "name": "Protector",
+      "primary_skill": "Discipline",
+      "secondary_skill": "Battle",
+      "suggested_focuses": [
+        "Resolve",
+        "Self-Control"
+      ],
+      "suggested_talent": "Bolster",
+      "description": "Steadfast bodyguards and personal shields willing to intercept assassination attempts and poisoned blades.",
+      "drive_advice": "Absolute Duty to their charge and Faith in their shield and oath."
+    },
+    "Athlete": {
+      "name": "Athlete",
+      "primary_skill": "Move",
+      "secondary_skill": "Discipline",
+      "suggested_focuses": [
+        "Grace",
+        "Stamina"
+      ],
+      "suggested_talent": "Nimble",
+      "description": "Acrobats, runners, gymnasts, and physical paragons pushing the limits of the human body through intense conditioning.",
+      "drive_advice": "Faith in biological perfection, Power forged through physical supremacy."
+    },
+    "Messenger": {
+      "name": "Messenger",
+      "primary_skill": "Move",
+      "secondary_skill": "Communicate",
+      "suggested_focuses": [
+        "Pilot (Ornithopter)",
+        "Unobtrusive"
+      ],
+      "suggested_talent": "Masterful Innuendo",
+      "description": "Couriers, dispatch pilots, and secret messengers who carry vital communications between distant holdings.",
+      "drive_advice": "Duty to deliver the dispatch at all costs; Truth preserved in transit."
+    },
+    "Scout": {
+      "name": "Scout",
+      "primary_skill": "Move",
+      "secondary_skill": "Understand",
+      "suggested_focuses": [
+        "Endurance",
+        "Stealth"
+      ],
+      "suggested_talent": "Putting Theory into Practice",
+      "description": "Pathfinders, wilderness guides, and planetary survey specialists exploring uncharted dunes and harsh frontiers.",
+      "drive_advice": "Truth found in nature, Faith in survival instincts, and Duty to guide their companions."
+    },
+    "Smuggler": {
+      "name": "Smuggler",
+      "primary_skill": "Move",
+      "secondary_skill": "Battle",
+      "suggested_focuses": [
+        "Pilot (Spacecraft)",
+        "Unobtrusive"
+      ],
+      "suggested_talent": "Subtle Step",
+      "description": "Shadow traders, blockade runners, and black-market pilots operating under the nose of CHOAM and Guild authorities.",
+      "drive_advice": "Personal Power, defiance of unjust laws (Justice), or practical survival."
+    },
+    "Empath": {
+      "name": "Empath",
+      "primary_skill": "Understand",
+      "secondary_skill": "Communicate",
+      "suggested_focuses": [
+        "Body Language",
+        "Social Awareness"
+      ],
+      "suggested_talent": "Passive Scrutiny",
+      "description": "Keen observers of human emotion, voice inflection, and micro-expressions, sensing deceit and hidden intent.",
+      "drive_advice": "Relentless pursuit of Truth and deep understanding of human vulnerability and Power."
+    },
+    "Scholar": {
+      "name": "Scholar",
+      "primary_skill": "Understand",
+      "secondary_skill": "Discipline",
+      "suggested_focuses": [
+        "Data Analysis",
+        "Deductive Reasoning"
+      ],
+      "suggested_talent": "Intense Study",
+      "description": "Archivists, historians, philosophers, and scientists preserving humanity's vast post-Jihad knowledge.",
+      "drive_advice": "Reverence for Truth, philosophical Faith, and duty to enlightenment."
+    },
+    "Spy": {
+      "name": "Spy",
+      "primary_skill": "Understand",
+      "secondary_skill": "Move",
+      "suggested_focuses": [
+        "Deductive Reasoning",
+        "Kanly"
+      ],
+      "suggested_talent": "Hidden Motives",
+      "description": "Secret agents, spymasters, and handlers orchestrating clandestine operations and kanly vendettas.",
+      "drive_advice": "Truth extracted from rivals, Power gained through black intelligence."
+    },
+    "Strategist": {
+      "name": "Strategist",
+      "primary_skill": "Understand",
+      "secondary_skill": "Battle",
+      "suggested_focuses": [
+        "Kanly",
+        "Strategy"
+      ],
+      "suggested_talent": "Master-at-Arms",
+      "description": "Grand planners of campaigns, political wars of assassins, and economic siegecraft across planetary scales.",
+      "drive_advice": "Mastery of Power through foresight and adherence to the Truth of numbers and logistics."
+    }
+  },
+  "factions": {
+    "None (House Retainer / Independent)": {
+      "name": "None (House Retainer / Independent)",
+      "additional_trait": "",
+      "mandatory_talents": [],
+      "require_all_mandatory": false,
+      "suggested_archetypes": [],
+      "description": "A loyal agent, retainer, courtier, officer, or noble scion of the House without allegiance to an external faction."
+    },
+    "Bene Gesserit Sister": {
+      "name": "Bene Gesserit Sister",
+      "additional_trait": "Bene Gesserit",
+      "mandatory_talents": [
+        "Prana-bindu Conditioning"
+      ],
+      "require_all_mandatory": true,
+      "suggested_archetypes": [
+        "Analyst",
+        "Athlete",
+        "Courtier",
+        "Empath",
+        "Envoy",
+        "Infiltrator",
+        "Protector",
+        "Scholar",
+        "Spy",
+        "Warrior"
+      ],
+      "description": "Trained in the secretive Sisterhood of the Bene Gesserit. Possesses unmatched bodily control, vocal command (the Voice), perceptive acumen, and loyalty divided between House and the Sisterhood."
+    },
+    "Fremen": {
+      "name": "Fremen",
+      "additional_trait": "Fremen",
+      "mandatory_talents": [
+        "Dedication",
+        "Driven",
+        "Master-at-Arms",
+        "Rapid Recovery",
+        "Resilience",
+        "Subtle Step",
+        "The Reason I Fight"
+      ],
+      "require_all_mandatory": false,
+      "suggested_archetypes": [
+        "Athlete",
+        "Duelist",
+        "Infiltrator",
+        "Protector",
+        "Scout",
+        "Sergeant",
+        "Warrior"
+      ],
+      "description": "Desert warriors of Arrakis, hardened by extreme dune ecology and bonded by sietch water-discipline. Fierce, direct, and unshakeable in faith and tribal bonds."
+    },
+    "Mentat": {
+      "name": "Mentat",
+      "additional_trait": "Mentat",
+      "mandatory_talents": [
+        "Calculated Prediction",
+        "Mentat Discipline",
+        "Mind Palace",
+        "Twisted Mentat",
+        "Verify"
+      ],
+      "require_all_mandatory": false,
+      "suggested_archetypes": [
+        "Analyst",
+        "Empath",
+        "Envoy",
+        "Herald",
+        "Scholar",
+        "Spy",
+        "Steward",
+        "Strategist",
+        "Tactician"
+      ],
+      "description": "Human computers trained to process vast flows of data and probability following the Butlerian Jihad's proscription of thinking machines. Indispensable strategic and administrative advisors to noble Houses."
+    },
+    "Spacing Guild Agent": {
+      "name": "Spacing Guild Agent",
+      "additional_trait": "Guild Agent",
+      "mandatory_talents": [
+        "Guildsman"
+      ],
+      "require_all_mandatory": true,
+      "suggested_archetypes": [
+        "Analyst",
+        "Courtier",
+        "Envoy",
+        "Messenger",
+        "Scholar",
+        "Scout",
+        "Smuggler",
+        "Spy",
+        "Strategist"
+      ],
+      "description": "Emissary or factor of the Spacing Guild, the interstellar monopoly holding absolute sway over foldspace travel and banking. Pragmatic, calculating, and protective of Guild transport privileges."
+    },
+    "Suk Doctor": {
+      "name": "Suk Doctor",
+      "additional_trait": "Suk Doctor",
+      "mandatory_talents": [
+        "Imperial Conditioning"
+      ],
+      "require_all_mandatory": true,
+      "suggested_archetypes": [
+        "Analyst",
+        "Commander",
+        "Courtier",
+        "Herald",
+        "Scholar",
+        "Steward"
+      ],
+      "description": "Graduate of the Suk Inner School of Medicine bearing the diamond tattoo of Imperial Conditioning. Reputedly incapable of taking human life, they are the most trusted physicians in the Imperium."
+    }
+  },
+  "skills": [
+    "Battle",
+    "Communicate",
+    "Discipline",
+    "Move",
+    "Understand"
+  ],
+  "skill_descriptions": {
+    "Battle": "Describes combat prowess in personal, skirmish, and fleet actions. Includes martial arts, blade combat, shield use, ranged weaponry, and tactical prowess.",
+    "Communicate": "Describes interpersonal capability, persuasion, diplomacy, charisma, deceit, and commanding presence in social and political spheres.",
+    "Discipline": "Describes mental endurance, composure under pressure, willpower, stealth, focus, and resisting sensory, psychological, or physical shocks.",
+    "Move": "Describes physical mobility, athletics, speed, piloting, agility, acrobatics, and maneuvering in hazardous environments.",
+    "Understand": "Describes analytical reasoning, intellect, academic scholarship, data appraisal, strategic awareness, and scientific or cultural knowledge."
+  },
+  "standard_focuses": {
+    "Battle": [
+      "Assassination",
+      "Atomics",
+      "Dirty Fighting",
+      "Dueling",
+      "Evasive Action",
+      "Heavy Weapons",
+      "Lasguns",
+      "Long Blades",
+      "Pistol",
+      "Pistols",
+      "Projectile Weapons",
+      "Rifle",
+      "Shield Fighting",
+      "Short Blades",
+      "Special Weapons",
+      "Tactics",
+      "Unarmed Combat"
+    ],
+    "Communicate": [
+      "Acting",
+      "Bartering",
+      "Charm",
+      "Deceit",
+      "Diplomacy",
+      "Disguise",
+      "Empathy",
+      "Etiquette",
+      "Innuendo",
+      "Inspiration",
+      "Intimidation",
+      "Leadership",
+      "Musical Instrument",
+      "Negotiation",
+      "Oratory",
+      "Persuasion",
+      "Seduction"
+    ],
+    "Discipline": [
+      "Attention to Detail",
+      "Command",
+      "Composure",
+      "Concentration",
+      "Espionage",
+      "Faith",
+      "Infiltration",
+      "Iron Will",
+      "Meditation",
+      "Observe",
+      "Precision",
+      "Resolve",
+      "Self-Control",
+      "Survival (Desert)",
+      "Survival (Jungle)",
+      "Survival (Urban)",
+      "Survival (Arctic)"
+    ],
+    "Move": [
+      "Acrobatics",
+      "Athletics",
+      "Body Control",
+      "Climb",
+      "Covert Movement",
+      "Dance",
+      "Distance Running",
+      "Drive",
+      "Endurance",
+      "Escape Artist",
+      "Grace",
+      "Gymnastics",
+      "Inconspicuous",
+      "Pilot (Groundcar)",
+      "Pilot (Ornithopter)",
+      "Pilot (Spacecraft)",
+      "Running",
+      "Sleight of Hand",
+      "Stamina",
+      "Stealth",
+      "Swimming",
+      "Unobtrusive"
+    ],
+    "Understand": [
+      "Advanced Technology",
+      "Astronomy",
+      "Biology",
+      "Body Language",
+      "Botany",
+      "CHOAM Bureaucracy",
+      "Combat Awareness",
+      "Cryptography",
+      "Cultural Studies",
+      "Danger Sense",
+      "Data Analysis",
+      "Deductive Reasoning",
+      "Ecology",
+      "Economics",
+      "Heraldry",
+      "History",
+      "Holtzman Fields",
+      "Imperial Law",
+      "Kanly",
+      "Medicine",
+      "Philosophy",
+      "Poisons",
+      "Politics",
+      "Psychology",
+      "Science",
+      "Sietch Customs",
+      "Social Awareness",
+      "Strategy",
+      "Technology",
+      "Treaties",
+      "Warfare"
+    ]
+  },
+  "talents": {
+    "Adrenaline Shot": {
+      "name": "Adrenaline Shot",
+      "faction_requirement": "Suk Doctor",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are adept at getting people back on their feet, even",
+      "rules": "if you only make them forget their pain for a moment. By using an action, the character can remove the effects of any physical complication from a character who is in the same zone. This complication is not removed and returns at the end of the scene unless otherwise removed. This talent can only be used once on a given character during each scene, but can be used on each character."
+    },
+    "Advisor": {
+      "name": "Advisor",
+      "faction_requirement": null,
+      "skill_param": true,
+      "drive_param": false,
+      "flavor": "You've got a knack for guiding others through problems.",
+      "rules": "When you choose this talent, select a single skill. When ever you assist an ally and you use that skill, the ally you assist may re-roll a single d20 in their dice pool."
+    },
+    "Binding Promise": {
+      "name": "Binding Promise",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Whether through your demeanor, your reputation,",
+      "rules": "or the method of your persuasion, you have a way of making people reluctant to break faith with you. When you succeed at a Communicate test to persuade someone to agree to a promise or agreement, you may spend one, two, or three points of Momentum to make that agreement binding. If that person wishes to break the promise, they must spend Threat equal to twice the Momentum you spent."
+    },
+    "Bold": {
+      "name": "Bold",
+      "faction_requirement": null,
+      "skill_param": true,
+      "drive_param": false,
+      "flavor": "When you take calculated risks, you tend to succeed",
+      "rules": "more often than seems reasonable. When you select this talent, choose a single skill. When you attempt a test using the chosen skill, and you buy additional d20s by generating Threat for the gamemaster, you may re-roll a single d20 in that dice pool."
+    },
+    "Bolster": {
+      "name": "Bolster",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your certainty and resolve are a beacon to others, who",
+      "rules": "might waver without your example. Once per scene, when an ally fails a skill test, you may immediately spend 2 points of Momentum or add 2 to Threat to allow that ally to re-roll their dice pool. When they re-roll, they may use your Discipline score instead of the skill they were using."
+    },
+    "Calculated Prediction": {
+      "name": "Calculated Prediction",
+      "faction_requirement": "Mentat",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Using the facts and figures you have memorized and",
+      "rules": "your ability to process information, you can attempt to predict the future. No such predictions are 100% per fect, as there may be variables you are unaware of that affect the future. You may spend a few minutes to meditate upon predict ing the future. This requires an Understand test with a Difficulty of 4; if successful, you may ask the Gamemas ter to state something that is likely to occur in the future. You may ask for one additional prediction for every two points of Momentum you spend. The Gamemaster can make these predictions vague and they do not have to explain any context for the prediction or why that thing is likely to occur."
+    },
+    "Cautious": {
+      "name": "Cautious",
+      "faction_requirement": null,
+      "skill_param": true,
+      "drive_param": false,
+      "flavor": "You are patient and circumspect, acting only when the",
+      "rules": "odds are in your favor. When you select this talent, choose a single skill. When you attempt a test using that skill, and you buy addi tional d20s by spending Momentum, you may re-roll a single d20 in that dice pool."
+    },
+    "Collaboration": {
+      "name": "Collaboration",
+      "faction_requirement": null,
+      "skill_param": true,
+      "drive_param": false,
+      "flavor": "You've coached your allies to capitalize on your exper",
+      "rules": "tise, and that effort has paid off. When you select this talent, choose a single skill with a rating of 6 or more. Whenever an ally attempts a test using that skill, and you can communicate with them, you may spend 2 points of Momentum to allow them to use your score for that skill, and one of your focuses (if applicable)."
+    },
+    "Combat Medic": {
+      "name": "Combat Medic",
+      "faction_requirement": "Suk Doctor",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are skilled at offering rapid medical attention, even",
+      "rules": "during a battle. When an ally in combat has suffered points towards the requirement to defeat them, you may spend 1 point of Momentum to reduce that point total by 2 as an action."
+    },
+    "Constantly Watching": {
+      "name": "Constantly Watching",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You're vigilant, bordering on paranoid\u2026 and little",
+      "rules": "catches you off-guard. Whenever you attempt a skill test to detect danger or hidden enemies, you reduce the Difficulty by 2, to a minimum of 0. In addition, once per scene, when an enemy chooses to Keep the Initiative, you can increase the cost to do so by +2."
+    },
+    "Cool Under Pressure": {
+      "name": "Cool Under Pressure",
+      "faction_requirement": null,
+      "skill_param": true,
+      "drive_param": false,
+      "flavor": "When the situation gets tough, you take a deep breath",
+      "rules": "and get the job done. When you select this talent, choose a single skill. When you attempt a test using that skill, before rolling you may spend a Determination point to automatically succeed at that test, but you generate no Momentum. The normal conditions for spending Determination still apply."
+    },
+    "Decisive Action": {
+      "name": "Decisive Action",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You take risks in combat, often ones that seem fool",
+      "rules": "hardy or needless. You have a knack for making those gambles pay off. In a conflict, when you succeed at a Battle test to remove an opponent's assets, and you bought one or more dice by generating Threat, you may spend 2 points of Momentum to remove a second enemy asset."
+    },
+    "Dedication": {
+      "name": "Dedication",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your commitment to a cause is unwavering, and this has",
+      "rules": "carried you through many a tough situation. At the start of a scene, if there is no Momentum in the group pool, roll 1d20. If you roll equal to or less than your Discipline score, add 1 to the group Momentum pool."
+    },
+    "Deliberate Motion": {
+      "name": "Deliberate Motion",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Every step you take is considered, and you are excep",
+      "rules": "tionally sure-footed. When you attempt a Move test and suffer one or more complications, you may spend Momentum to ignore some or all of those complications; this costs 1 point of Momentum per complication ignored."
+    },
+    "Direct": {
+      "name": "Direct",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your will and presence can drive others to act swiftly",
+      "rules": "and efficiently. Once per scene, you may command an ally or subordi nate to act. This requires no test from you, but the com manded ally may immediately attempt an action of their own, and you may assist any test they attempt. If done during a conflict, the ally acts on your turn regardless of if they have already acted, and this does not prevent them acting later during the round."
+    },
+    "Driven": {
+      "name": "Driven",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your determination does not waver.",
+      "rules": "After you spend a point of Determination, roll 1d20. If you roll equal to or under your Discipline rating (by itself), you immediately regain that point of Determination."
+    },
+    "Dual Fealty": {
+      "name": "Dual Fealty",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You owe your service and your life to two different fac",
+      "rules": "tions equally, and you have the trust of both. Choose two factions to be loyal to. This will normally be your House and another group such as the Bene Gesserit, but it can be to any two factions you would reasonably have contact with. Both factions are aware of your loyalties to both and expect that you will not betray one to the other. You may interact on friendly terms with members of both factions, without any expectations of betrayal or other peril."
+    },
+    "Failed Navigator": {
+      "name": "Failed Navigator",
+      "faction_requirement": "Spacing Guild Agent",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You underwent trials to become a Guild Navigator, but you",
+      "rules": "failed to meet the standards required\u2026 yet, for one brief moment, your consciousness became one with the uni verse. In times of stress, your mind sometimes repeats this, granting you a momentary insight of some kind. Whenever you spend a point of Determination, the gamemaster will grant you an additional insight. This may relate to your current activities, or it may be com pletely unrelated."
+    },
+    "Find Trouble": {
+      "name": "Find Trouble",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You know where to find the criminal element wherever",
+      "rules": "you go. Wherever you are, once per adventure, you can always contact the criminal underworld or black market (as long as there is one in that area). This doesn't mean they will be well disposed toward you, just that you can find a contact."
+    },
+    "Guildsman": {
+      "name": "Guildsman",
+      "faction_requirement": "Spacing Guild Agent",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You have connections to the Spacing Guild, granting",
+      "rules": "you more access to their resources than most. You are not a Navigator, but you may be an agent, representa tive, banker, diplomat, or similar associate of the Guild. Once per adventure, you may call upon your Spacing Guild connection to use Guild facilities or resources, or to organize a meeting with important persons within the Guild. You do not have the authority to make demands of the Guild itself. If you need to use Guild resources more than once during the course of an adventure, the second time adds 2 to Threat, the third time adds 4, and so forth, adding +2 to the cost each time, as your increased use risks drawing undue attention to you."
+    },
+    "Hidden Motives": {
+      "name": "Hidden Motives",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are a master at concealing your intentions and",
+      "rules": "motivations. Few truly know what drives you, even if they think they understand you. When an opponent fails an Understand or Communicate test against you, you may immediately create a trait which reflects a mistaken belief they have about you."
+    },
+    "Hyperawareness": {
+      "name": "Hyperawareness",
+      "faction_requirement": "Bene Gesserit Sister",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your training has honed your awareness to an incredible",
+      "rules": "degree, allowing you to notice details too small for others to perceive. Armed with these insights, you can uncover secrets and truths that others may be oblivious to. Whenever you spend Momentum to Obtain Informa tion about the current situation, your current location, or a person you can currently observe, you may ask two questions for the first point of Momentum spent. Fur ther, the limits of what others would be able to notice do not apply to you for any questions."
+    },
+    "Imperial Conditioning": {
+      "name": "Imperial Conditioning",
+      "faction_requirement": "Suk Doctor",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Through intense psychological conditioning, you cannot",
+      "rules": "take a human life, or cause a human to come to harm. This is a necessary step, for those with power and status must be free of the fear that their physicians might be assassins. 128 You cannot willingly inflict harm upon or kill a human being. Any attempt to coerce you into such an action auto matically fails, and you automatically succeed on any skill test to persuade another that you intend them no harm."
+    },
+    "Improved Resources": {
+      "name": "Improved Resources",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are entrusted with greater access to the tools and",
+      "rules": "resources you need to achieve your goals. You may increase the number of assets you possess by +1. This talent may be purchased multiple times."
+    },
+    "Improvised Weapon": {
+      "name": "Improvised Weapon",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are able to turn the most innocuous items into",
+      "rules": "deadly weapons at a moment's notice. Once per scene you may create a Quality 0 asset (at no cost) that you can use in a personal or skirmish conflict. It might be a rock, broken bottle, or shard of glass, but it is enough to function as a weapon. The asset is removed at the end of any conflict it is used for, as it will be too badly damaged to use again."
+    },
+    "Intense Study": {
+      "name": "Intense Study",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are extremely well-read, with vast amounts of",
+      "rules": "knowledge about a wide range of subjects. Once per scene, you may use your Understand skill on a single skill test instead of any other skill, and you are counted as having a focus for that test."
+    },
+    "Make Haste": {
+      "name": "Make Haste",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "There is value in speed, even if there are consequences.",
+      "rules": "When you attempt a Move test, you may choose to suffer one additional complication in exchange for scoring one automatic success on the test. During any conflict, you may add 1 to Threat to take the first action, regardless of who would otherwise act first."
+    },
+    "Mask of Power": {
+      "name": "Mask of Power",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You can intimate that you know more than you do about",
+      "rules": "an enemy's secrets. Once per scene you may create an asset (at no cost) such as blackmail evidence or an owed favor that will allow you to initiate an intrigue or espionage conflict with a person of your choosing. The asset is a lie, of course; you don't have anything, but your target doesn't know that. The asset is removed once the conflict is over, and if you are defeated the fact you were bluffing is exposed and you suffer an additional complication."
+    },
+    "Master-at-Arms": {
+      "name": "Master-at-Arms",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your expertise in battle is considerable, and few can",
+      "rules": "match your effectiveness in combat. At the start of a duel, skirmish, or battle scene, select a single asset that represents a melee weapon or a unit of troops. Due to your prowess, you may spend 1 Momen tum to improve that asset's Quality by 1 for the next conflict in this scene."
+    },
+    "Masterful Innuendo": {
+      "name": "Masterful Innuendo",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You have a special knack for saying more than one thing",
+      "rules": "at once, conveying one message with the literal meaning of your words and another with innuendo, allusions, and signals that only the intended recipients will understand. When you attempt a Communicate test, you may choose to increase the Difficulty of the test by +1 to conceal a hidden message within your words. You must state who is the intended recipient of this hidden mes sage. People other than the intended recipient cannot discern that you have concealed another message, unless they have this talent, or some other ability to detect things which people cannot normally detect (such as the Hyperawareness talent)."
+    },
+    "Mentat Discipline": {
+      "name": "Mentat Discipline",
+      "faction_requirement": "Mentat",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Intense mental conditioning and extensive training have",
+      "rules": "developed your intellect into a potent and valuable thing. You can retain and process vast amounts of infor mation at extraordinary speeds. You have almost perfect recall, for even the most com plex data. When making an Understand test that applies to recalling data, one of the D20s in your pool may be considered to have rolled a 1 instead of rolling it."
+    },
+    "Mind Palace": {
+      "name": "Mind Palace",
+      "faction_requirement": "Mentat",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You have exceptional recall and can reconstruct events",
+      "rules": "and places you have experienced with perfect accuracy, allowing you to revisit them later. You may attempt a Difficulty 0 Understand test to recall a past event or a place you have previously been to. Momentum you generate on this test may be spent to recall facts and details about that event or location; this is treated like Obtain Information, but you may ask ques tions about things you have previously encountered, rather than merely those which are currently present in the scene."
+    },
+    "Nimble": {
+      "name": "Nimble",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You're quick on your feet, and few obstacles can",
+      "rules": "impede you. When attempting a Move test to move over, around, or through difficult terrain or similar physical obstacles (such as during a duel or skirmish), you may reduce the Difficulty of the test by 2. If this reduces the Difficulty to 0, you may move over or around that obstacle freely as if it wasn't there."
+    },
+    "Other Memory": {
+      "name": "Other Memory",
+      "faction_requirement": "Bene Gesserit Sister",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You have undergone the Agony attended by another",
+      "rules": "Reverent Mother, and now you can draw upon the mem ories and wisdom of all your ancestors. In doing so, you have become a Reverend Mother of the Bene Gesserit. You must be a Reverend Mother of the Bene Gesserit (and have an appropriate trait reflecting this) to select this talent. If this talent is selected in play, another Rev erend Mother must be on hand and in physical contact to pass this genetic memory on to you. Whenever you attempt a test where knowledge of past events\u2014even those which may have occurred many generations ago\u2014would be beneficial, you score three automatic successes. You may also share your genetic memory with other Reverend Mothers at will."
+    },
+    "Passive Scrutiny": {
+      "name": "Passive Scrutiny",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are quick to notice details which may be of impor",
+      "rules": "tance later. When you enter a scene, you may ask one question of the gamemaster as if you'd spent Momentum to Obtain Information."
+    },
+    "Performer": {
+      "name": "Performer",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your skill with music or poetry helps to soothe and",
+      "rules": "inspire your comrades. Once per scene you may entertain the group with a short performance. This might be playing the balliset, singing, reciting a poem, dancing, or even juggling. Once the performance is over you may add 1 to the group's Momentum pool."
+    },
+    "Prana-bindu Conditioning": {
+      "name": "Prana-bindu Conditioning",
+      "faction_requirement": "Bene Gesserit Sister",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You have absolute control over your body. Every muscle",
+      "rules": "and every nerve is under your control, and you have even mastered your own body chemistry and metabolism. Whenever you attempt a Move or Discipline test which relies on your control of your body, you may re-roll a single d20. You can perfectly control your breathing, heart rate, and your internal organs (including the ability to choose whether to conceive a child, and to deter mine the child's physical and genetic traits)."
+    },
+    "Priority Boarding": {
+      "name": "Priority Boarding",
+      "faction_requirement": "Spacing Guild Agent",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You can call in a few favors to ensure the Guild inspec",
+      "rules": "tors don't take too long looking at your luggage. You don't need to offer bribes to ensure Guild inspec tors simply take your word for it that all your cargo and possessions are as they should be. This allows you to smuggle anything aboard a Guild ship. However, if something you have brought aboard creates problems for the Guild, you will lose this talent."
+    },
+    "Putting Theory into Practice": {
+      "name": "Putting Theory into Practice",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You've learned how to quickly turn newfound knowl",
+      "rules": "edge into a practical advantage. Once per scene, when you Obtain Information, you may create a trait for free, which must represent an advantage, opportunity, or weakness you've identified with the information you received."
+    },
+    "Ransack": {
+      "name": "Ransack",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "When time is of the essence, you prioritize getting the",
+      "rules": "work done over covering your tracks. When you attempt an Understand test to search an area, you may add 2 to Threat to reduce the difficulty of the test by 1, and to halve the amount of time the test takes to attempt."
+    },
+    "Rapid Maneuver": {
+      "name": "Rapid Maneuver",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You're fast, able to cross ground, find the shortest",
+      "rules": "route, and bring your tools to bear quicker than most. When attempting a skill test to reach a destination quickly when moving on foot or in a vehicle, reduce the Difficulty by 1. In a conflict, when moving an asset, you may move the asset an additional zone for 1 point of Momentum, rather than 2."
+    },
+    "Rapid Recovery": {
+      "name": "Rapid Recovery",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You return to fighting form quickly after being injured,",
+      "rules": "even when it may be risky to return to the fray. Once per scene, at the start of your turn, you may add +2 to Threat to remove a complication which represents an injury. In addition, you may pay to Resist Defeat one additional time during a conflict."
+    },
+    "Resilience": {
+      "name": "Resilience",
+      "faction_requirement": "Fremen",
+      "skill_param": true,
+      "drive_param": false,
+      "flavor": "It takes a lot to put you down in a conflict. You get back",
+      "rules": "up more often than most. Usually you may only \u2018Resist Defeat' once per scene. You can do so twice per scene, but only when in a conflict using the listed skill."
+    },
+    "Rigorous Control": {
+      "name": "Rigorous Control",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are an island of calm amidst the chaos of the",
+      "rules": "universe, maintaining control over yourself when you cannot control anything else. Whenever you are attempting an extended task where the requirement is based on one of your skills, at the cost of 1 Momentum you may use your Discipline for that requirement instead of the skill normally used. If the requirement would normally be based on your Discipline, reduce the requirement by 1 for that extended task."
+    },
+    "Specialist": {
+      "name": "Specialist",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your duties require you to manage a greater type of a",
+      "rules": "specific kind of asset. You may purchase this talent multiple times. Each time you select this talent, choose a single category of asset from the following list: dueling, warfare, espionage, or intrigue. You increase the number of assets you possess by +2, but those two additional assets must be from the chosen category. 130"
+    },
+    "Stirring Rhetoric": {
+      "name": "Stirring Rhetoric",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are an able public speaker, and your words carry",
+      "rules": "weight and purpose. When you succeed at a Communicate test to address a group of people, you may select a number of those people equal to your Communicate skill. Those char acters may re-roll a single d20 on the next test they attempt which uses the same drive that you used on your Communicate test."
+    },
+    "Subtle Step": {
+      "name": "Subtle Step",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You're well-versed in methods of avoiding notice, and",
+      "rules": "you reveal little that you do not intend to. When you attempt a Move test to sneak or otherwise pass unseen through an area, or when you attempt to move an asset subtly during a conflict, the first extra d20 you purchase for the test is free."
+    },
+    "Subtle Words": {
+      "name": "Subtle Words",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You are skilled at swaying others with a few quiet words",
+      "rules": "spoken in the right place at the right time. Even they may not realize what influence your words have had. When you attempt a Communicate test, and you buy one or more dice by spending Momentum, you may create a new trait for free upon the character you have spoken to, which reflects your influence upon their thoughts or mood."
+    },
+    "The Reason I Fight": {
+      "name": "The Reason I Fight",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": true,
+      "flavor": "Skill is not the only factor in determining victory;",
+      "rules": "those who want it more, and those who are driven by a greater sense of purpose, may triumph when they should have failed. When you select this talent, choose a single drive rated 6 or higher. When you attempt a Battle test using the chosen drive, and the drive's statement aligns with the action being attempted, you may re-roll 1d20."
+    },
+    "The Slow Blade": {
+      "name": "The Slow Blade",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "The slow blade pierces the shield. You're well-versed in",
+      "rules": "the subtle ways of avoiding an opponent's defenses. When you make an attack during a duel or a skirmish using a melee weapon, and you buy one or more dice by spending Momentum, you may choose one of the enemy's assets in the same zone as your attack; you can ignore that asset during your attack."
+    },
+    "To Fight Someone is to Know Them": {
+      "name": "To Fight Someone is to Know Them",
+      "faction_requirement": null,
+      "skill_param": true,
+      "drive_param": false,
+      "flavor": "You are an expert in studying your foes in conflict,",
+      "rules": "learning how they think and gleaning secrets from them based on how they move, attack, and defend. When you select this talent, choose a skill. When you win a conflict using the chosen skill, you gain two bonus Momentum points, which you may use to Obtain Infor mation or to create a trait that represents some knowl edge or insight you've gained about your opponent."
+    },
+    "Twisted Mentat": {
+      "name": "Twisted Mentat",
+      "faction_requirement": "Mentat",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your Mentat abilities were shaped and engineered by",
+      "rules": "the Bene Tleilax to leave you unencumbered by such petty things as morality, taboo, or decency. Whenever you attempt an Understand test, you gen erate one bonus Momentum point for each die you bought by adding to Threat. This bonus Momentum may only be used to Obtain Information about the most effective ways to harm or inflict pain upon a person within the scene, or to create a trait which represents a weakness you have discovered which you can exploit. This Talent may only be chosen in character creation."
+    },
+    "Unquestionable Loyalty": {
+      "name": "Unquestionable Loyalty",
+      "faction_requirement": null,
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "Your loyalty to your House is such that it can drive you",
+      "rules": "to action even in the direst of circumstances. At the start of each adventure, you begin with one additional point of Determination. This extra point can only be used on an action which is in direct service to your House."
+    },
+    "Verify": {
+      "name": "Verify",
+      "faction_requirement": "Mentat",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You have so much data at your fingertips you can see",
+      "rules": "where it contradicts and determine where falsehoods lie. You may spend a point of Momentum to ask the gam emaster if a piece of information you have is true or false. You need not be making a skill test as with Obtain Information, and the data can be your supposition as much as a specific document or rumor."
+    },
+    "Voice": {
+      "name": "Voice",
+      "faction_requirement": "Bene Gesserit Sister",
+      "skill_param": false,
+      "drive_param": false,
+      "flavor": "You have been trained to modulate your voice to influ",
+      "rules": "ence the subconscious minds of others. With this skill you can subtly manipulate others, alter motivations and moods, or even compel action from the unwilling. You may use Voice whenever you speak to someone else, though you must be able to observe them for a short while beforehand, and they must be able to hear you speak. When you use Voice, you may add one, two, or three points to Threat to score the same number of automatic successes on any Communicate test made to influence your chosen target. The greater the number of automatic successes, the more overt your use of Voice, which others may notice. Your training also allows you to buy those automatic successes on any test made to resist the effects of Voice."
+    }
+  },
+  "drives": [
+    "Duty",
+    "Faith",
+    "Justice",
+    "Power",
+    "Truth"
+  ],
+  "drive_descriptions": {
+    "Duty": "Duty reflects your commitment to a person, organization, House, or cause. It defines obedience, loyalty, obligation, and fulfillment of one's sworn station.",
+    "Faith": "Faith reflects your belief in something greater than yourself\u2014be it religion, prophecy, destiny, the philosophy of your school, or trust in personal spiritual convictions.",
+    "Justice": "Justice reflects your belief in fairness, balance, and righting perceived wrongs. It can represent upholding Imperial law, personal vendetta (kanly), or equity for the downtrodden.",
+    "Power": "Power reflects your desire to command, control, influence, and dominate your surroundings and those within them, proving strength, superiority, or securing autonomy.",
+    "Truth": "Truth reflects your pursuit of objective reality, knowledge, clarity, and the unmasking of deception. It values empirical evidence, precision, or philosophical honesty over dogma."
+  },
+  "drive_statements": {
+    "Duty": [
+      "People are the true strength of a Great House.",
+      "I serve at the pleasure of the House.",
+      "Humans live best when each has their place.",
+      "Acceptance of place is the death of freedom.",
+      "Those above offer duty to those below.",
+      "I know my responsibilities.",
+      "Duty is a sharp blade.",
+      "What must be done, must be done.",
+      "My House's honor is my honor.",
+      "Loyalty is the only currency that never devalues."
+    ],
+    "Faith": [
+      "My faith gives me certainty where others might doubt.",
+      "Faith is merely obedience to the myths of the past.",
+      "God will deliver me to whatever fate is mine.",
+      "Machines are things of corruption.",
+      "I trust my heart, not my head.",
+      "Our trials are how God tests us.",
+      "Those who doubt my faith will be proved wrong.",
+      "God has forgotten us for we are not worthy.",
+      "The desert cleanses all falsehoods.",
+      "Prophecy is written across the stars."
+    ],
+    "Justice": [
+      "I must shield those in my care.",
+      "I will get revenge on those who have wronged me.",
+      "I have no patience for those who complain that life is unfair.",
+      "What we do will return to us.",
+      "Life isn't fair.",
+      "Justice is what you can get away with.",
+      "Justice is only for the wealthy.",
+      "Everyone should be treated equally.",
+      "Kanly must be satisfied in blood and coin.",
+      "An eye for an eye restores cosmic balance."
+    ],
+    "Power": [
+      "Power must be used wisely and cleverly.",
+      "The power to destroy a thing is the absolute control over it.",
+      "All power invites challenge.",
+      "Those who have true power need seldom wield it.",
+      "Power attracts those who are corruptible.",
+      "Power comes at a knife's edge.",
+      "I will have what is owed to me.",
+      "Strength is nothing without grace.",
+      "He who controls the spice controls the universe.",
+      "Rule through fear leaves no room for hesitation."
+    ],
+    "Truth": [
+      "Respect for the truth comes close to being the basis for all morality.",
+      "I decide what is true.",
+      "I seek to uncover the many secrets of the universe.",
+      "If I do not know it, it is irrelevant.",
+      "The purpose of argument is to change the nature of truth.",
+      "What one wishes were true is seldom so.",
+      "You will know me by my deeds.",
+      "Truth is the first casualty of war.",
+      "The mind unclouded sees the hidden path.",
+      "A lie spoken often enough does not become fact."
+    ]
+  },
+  "ambition_examples": {
+    "Duty": [
+      "Elevate my House to a seat on the Landsraad High Council.",
+      "Safeguard the young Heir from all assassins and political traps.",
+      "Restore our House's ancient ancestral homeworld.",
+      "Prove myself worthy of succeeding the Warmaster.",
+      "Break the bonds of serfdom and forge a new free charter."
+    ],
+    "Faith": [
+      "Fulfill the ancient prophecy of the Mahdi on Arrakis.",
+      "Root out Butlerian tech-heresy across three planetary systems.",
+      "Attain true spiritual enlightenment through rigorous desert isolation.",
+      "Spread the sacred tenets of the Zensunni wanderers.",
+      "Expose a false religious movement manipulated by rival Houses."
+    ],
+    "Justice": [
+      "Avenge the slaughter of my kin in an honorable kanly feud.",
+      "Overturn an unlawful Imperial seizure of our family's mineral fief.",
+      "Bring a corrupt CHOAM auditor to trial before the Emperor.",
+      "Liberate the enslaved miners of an illicit spice operation.",
+      "Establish an inviolable court of arbitration between warring Houses."
+    ],
+    "Power": [
+      "Secure direct control over a profitable spice-harvesting concession.",
+      "Become the chief spymaster behind the planetary governor.",
+      "Outmaneuver and supplant our bitter rival in the Landsraad.",
+      "Master the secrets of the Voice to compel noble peers without question.",
+      "Amass enough wealth to purchase a permanent CHOAM directorship."
+    ],
+    "Truth": [
+      "Expose the treasonous conspiracy linking House rivals to Imperial conspirators.",
+      "Decipher an ancient Pre-Guild data crystal lost in the deep sands.",
+      "Catalog the exact ecological lifecycle of the great sandworms.",
+      "Unmask the undercover Bene Gesserit agent manipulating our court.",
+      "Discover the mathematical theorem governing foldspace anomalies."
+    ]
+  },
+  "assets": {
+    "Kindjal": {
+      "name": "Kindjal",
+      "asset_type": "Tangible",
+      "category": "Personal Weapons",
+      "quality": 0,
+      "traits": [
+        "Blade",
+        "Melee",
+        "Concealed"
+      ],
+      "description": "A traditional double-edged long dagger favored by nobility and duelists."
+    },
+    "Crysknife": {
+      "name": "Crysknife",
+      "asset_type": "Tangible",
+      "category": "Personal Weapons",
+      "quality": 1,
+      "traits": [
+        "Sacred",
+        "Blade",
+        "Deadly",
+        "Unfixed"
+      ],
+      "description": "Carved from the tooth of Shai-Hulud; never to be sheathed without drawing blood."
+    },
+    "Blade": {
+      "name": "Blade",
+      "asset_type": "Tangible",
+      "category": "Personal Weapons",
+      "quality": 0,
+      "traits": [
+        "Blade",
+        "Melee"
+      ],
+      "description": "A standard sword or combat knife used throughout the Imperium."
+    },
+    "Bodkin": {
+      "name": "Bodkin",
+      "asset_type": "Tangible",
+      "category": "Personal Weapons",
+      "quality": 0,
+      "traits": [
+        "Blade",
+        "Piercing",
+        "Concealed"
+      ],
+      "description": "A thin, needle-pointed dagger crafted to bypass armor seams or slide through shields slowly."
+    },
+    "Pulse-Sword": {
+      "name": "Pulse-Sword",
+      "asset_type": "Tangible",
+      "category": "Personal Weapons",
+      "quality": 1,
+      "traits": [
+        "Vibrating",
+        "High-Tech",
+        "Deadly"
+      ],
+      "description": "A high-frequency vibrating blade capable of shearing through tough alloys."
+    },
+    "Maula Pistol": {
+      "name": "Maula Pistol",
+      "asset_type": "Tangible",
+      "category": "Ranged Weapons",
+      "quality": 0,
+      "traits": [
+        "Ranged",
+        "Spring-Loaded",
+        "Silent"
+      ],
+      "description": "A spring-loaded dart pistol throwing poison or tranquilizer needles silently."
+    },
+    "Lasgun": {
+      "name": "Lasgun",
+      "asset_type": "Tangible",
+      "category": "Ranged Weapons",
+      "quality": 1,
+      "traits": [
+        "Energy",
+        "Continuous Beam",
+        "Extreme Range",
+        "Volatile vs Shields"
+      ],
+      "description": "A continuous-wave laser carbine. Catastrophic Holtzman sub-atomic explosion if fired at a shield!"
+    },
+    "Dartgun": {
+      "name": "Dartgun",
+      "asset_type": "Tangible",
+      "category": "Ranged Weapons",
+      "quality": 0,
+      "traits": [
+        "Concealed",
+        "Silent",
+        "Poison-Delivery"
+      ],
+      "description": "A palm-sized or forearm-mounted projectile weapon firing lethal slips or paralytics."
+    },
+    "Hunter-Seeker": {
+      "name": "Hunter-Seeker",
+      "asset_type": "Tangible",
+      "category": "Assassination Gear",
+      "quality": 1,
+      "traits": [
+        "Suspensor",
+        "Autonomous",
+        "Lethal Needle",
+        "Requires Line-of-Sight Operator"
+      ],
+      "description": "A compressed sliver of metal suspended on an anti-gravity field, steered by an assassin's eye."
+    },
+    "Slip-Tip": {
+      "name": "Slip-Tip",
+      "asset_type": "Tangible",
+      "category": "Assassination Gear",
+      "quality": 0,
+      "traits": [
+        "Coated Blade",
+        "Poison"
+      ],
+      "description": "A knife treated with lethal chaumurky or chaumas residue on a quick-release blade sheath."
+    },
+    "Personal Shield": {
+      "name": "Personal Shield",
+      "asset_type": "Tangible",
+      "category": "Defenses",
+      "quality": 0,
+      "traits": [
+        "Holtzman Field",
+        "Kinetic Deflector",
+        "Energy Barrier"
+      ],
+      "description": "A waist-worn Holtzman generator enveloping the wearer in a shimmering protective field that stops fast velocity."
+    },
+    "Stillsuit": {
+      "name": "Stillsuit",
+      "asset_type": "Tangible",
+      "category": "Survival Gear",
+      "quality": 1,
+      "traits": [
+        "Water-Reclamation",
+        "Thermal Regulation",
+        "Desert Essential"
+      ],
+      "description": "Micro-sandwich filtration suit capturing all bodily moisture and recycling it to pure drinkable water."
+    },
+    "Jubba Cloak": {
+      "name": "Jubba Cloak",
+      "asset_type": "Tangible",
+      "category": "Survival Gear",
+      "quality": 0,
+      "traits": [
+        "Thermal Cloak",
+        "Camouflage"
+      ],
+      "description": "An all-weather desert robe worn over stillsuits to deflect searing sun and harsh sandstorms."
+    },
+    "Poison Snooper": {
+      "name": "Poison Snooper",
+      "asset_type": "Tangible",
+      "category": "Sensors & Security",
+      "quality": 0,
+      "traits": [
+        "Olfactory Scanner",
+        "Chemical Analysis"
+      ],
+      "description": "An olfactory sensor tuned to detect hundreds of volatile poisons and toxins in food or air."
+    },
+    "Fremkit": {
+      "name": "Fremkit",
+      "asset_type": "Tangible",
+      "category": "Survival Gear",
+      "quality": 0,
+      "traits": [
+        "Desert Kit",
+        "Tools"
+      ],
+      "description": "Standard Arrakeen survival kit containing maker hooks, thumper, filter straws, sand-compass, and beacons."
+    },
+    "Personal Suspensor": {
+      "name": "Personal Suspensor",
+      "asset_type": "Tangible",
+      "category": "Mobility",
+      "quality": 0,
+      "traits": [
+        "Anti-Gravity",
+        "Null-G",
+        "Quiet"
+      ],
+      "description": "Holtzman field harness that reduces the wearer's effective mass for gliding and silent falls."
+    },
+    "Filmbook & Reader": {
+      "name": "Filmbook & Reader",
+      "asset_type": "Tangible",
+      "category": "Scholarship & Intelligence",
+      "quality": 0,
+      "traits": [
+        "Archive",
+        "Mnemonic",
+        "Encrypted"
+      ],
+      "description": "A shigawire-imprinted informational tome containing comprehensive archives of history, law, or fauna."
+    },
+    "Sapho Juice": {
+      "name": "Sapho Juice",
+      "asset_type": "Tangible",
+      "category": "Consumables",
+      "quality": 0,
+      "traits": [
+        "Cognitive Booster",
+        "Mentat Tool"
+      ],
+      "description": "Extracted from Ecaz tree roots, boiling mental energy to extraordinary heights and staining lips ruby red."
+    },
+    "Ixian Damper": {
+      "name": "Ixian Damper",
+      "asset_type": "Tangible",
+      "category": "Espionage Gear",
+      "quality": 1,
+      "traits": [
+        "Sound Suppression",
+        "Surveillance Blocker"
+      ],
+      "description": "A compact generator projecting a distortion cone that muffles sound and conceals conversation."
+    },
+    "House Retainer Contract": {
+      "name": "House Retainer Contract",
+      "asset_type": "Intangible",
+      "category": "Status & Affiliation",
+      "quality": 0,
+      "traits": [
+        "Fealty",
+        "House Protection",
+        "Stipend"
+      ],
+      "description": "Official patent of service granting legal authority, livery privileges, and House backing."
+    },
+    "Old Friendship": {
+      "name": "Old Friendship",
+      "asset_type": "Intangible",
+      "category": "Social Ties",
+      "quality": 0,
+      "traits": [
+        "Trust",
+        "Reliable",
+        "Personal Bond"
+      ],
+      "description": "A longstanding comrade, veteran squadmate, or court ally willing to grant sanctuary or favors."
+    },
+    "Significant Favor Owed": {
+      "name": "Significant Favor Owed",
+      "asset_type": "Intangible",
+      "category": "Leverage",
+      "quality": 1,
+      "traits": [
+        "Leverage",
+        "One-Time Call",
+        "High-Value"
+      ],
+      "description": "A blood debt or political marker owed by an influential noble, merchant lord, or guild officer."
+    },
+    "Network of Informants": {
+      "name": "Network of Informants",
+      "asset_type": "Intangible",
+      "category": "Espionage & Secrets",
+      "quality": 1,
+      "traits": [
+        "Covert",
+        "Eavesdropping",
+        "Whisperers"
+      ],
+      "description": "A reliable circle of servants, dockworkers, or low-ranking clerks passing rumors and movements."
+    },
+    "Blackmail Dossier": {
+      "name": "Blackmail Dossier",
+      "asset_type": "Intangible",
+      "category": "Leverage",
+      "quality": 1,
+      "traits": [
+        "Secret",
+        "Damning",
+        "Kanly Weapon"
+      ],
+      "description": "Irrefutable evidence of financial embezzlement, illicit tech, or treason against a rival rival House."
+    },
+    "CHOAM Trading Permit": {
+      "name": "CHOAM Trading Permit",
+      "asset_type": "Intangible",
+      "category": "Economic Influence",
+      "quality": 0,
+      "traits": [
+        "Monopoly",
+        "Commerce",
+        "Customs Immunity"
+      ],
+      "description": "Official authorization to barter, freight, and trade restricted commodities across star systems."
+    },
+    "Smuggler Safehouse Access": {
+      "name": "Smuggler Safehouse Access",
+      "asset_type": "Intangible",
+      "category": "Criminal Contacts",
+      "quality": 0,
+      "traits": [
+        "Underworld",
+        "Shelter",
+        "Off-Grid"
+      ],
+      "description": "Code words and clearances granting refuge, unmarked transport, and black market access."
+    },
+    "Noble Title / Scion Standing": {
+      "name": "Noble Title / Scion Standing",
+      "asset_type": "Intangible",
+      "category": "Status & Affiliation",
+      "quality": 1,
+      "traits": [
+        "Aristocratic",
+        "Landsraad Privileges",
+        "Diplomatic Immunity"
+      ],
+      "description": "Recognized aristocratic lineage granting audience rights, precedence in duels, and formal deference."
+    },
+    "Mentat Master of Assassins Network": {
+      "name": "Mentat Master of Assassins Network",
+      "asset_type": "Intangible",
+      "category": "Espionage & Secrets",
+      "quality": 1,
+      "traits": [
+        "Lethal",
+        "Calculated",
+        "Covert"
+      ],
+      "description": "Access to coded assassination dead-drops and specialized poisoners trained in kanly protocol."
+    }
+  },
+  "houses": [
+    "House Atreides",
+    "House Harkonnen",
+    "House Corrino",
+    "House Moritani",
+    "House Vernius (Ix)",
+    "House Richese",
+    "House Ecaz",
+    "House Fenring",
+    "House Ginaz",
+    "House Hagal",
+    "House Molay",
+    "Independent / Fremen Tribe"
+  ],
+  "homeworlds": [
+    "Arrakis (Dune)",
+    "Caladan",
+    "Giedi Prime",
+    "Kaitain",
+    "Salusa Secundus",
+    "Ix",
+    "Richese",
+    "Ecaz",
+    "Wallach IX",
+    "Ginaz",
+    "Bela Tegeuse",
+    "Chusuk",
+    "Grumman",
+    "Lankiveil"
+  ],
+  "house_roles": [
+    "Heir",
+    "Warmaster",
+    "Spymaster",
+    "Mentat Advisor",
+    "Chief Physician",
+    "Swordmaster of Ginaz",
+    "Ambassador / Diplomat",
+    "Major-Domo / Steward",
+    "Master of Assassins",
+    "House Guard Captain",
+    "Elite Trooper",
+    "Courtier / Consort",
+    "Finance Minister / Factor",
+    "Secret Agent / Infiltrator",
+    "Ornithopter Ace",
+    "Desert Guide / Fedaykin"
+  ],
+  "personal_traits": [
+    "Calculating",
+    "Fearless",
+    "Patient",
+    "Ruthless",
+    "Steadfast",
+    "Charismatic",
+    "Suspicious",
+    "Observant",
+    "Cunning",
+    "Honorable",
+    "Vengeful",
+    "Disciplined",
+    "Inquisitive",
+    "Arrogant",
+    "Resourceful",
+    "Unforgiving",
+    "Devout",
+    "Fatalistic",
+    "Stoic",
+    "Unyielding"
+  ],
+  "names": {
+    "imperial_first": [
+      "Leto",
+      "Paul",
+      "Victor",
+      "Paulus",
+      "Dominic",
+      "Rhombur",
+      "Iakin",
+      "Hasimir",
+      "Shaddam",
+      "Morzan",
+      "Cammar",
+      "Yorek",
+      "Vladimir",
+      "Feyd",
+      "Glossu",
+      "Abulurd",
+      "Gurney",
+      "Duncan",
+      "Thufir",
+      "Piter",
+      "Wellington",
+      "Whitmore",
+      "Josef",
+      "Jessica",
+      "Irulan",
+      "Chani",
+      "Margot",
+      "Helena",
+      "Wensicia",
+      "Kailea",
+      "Lucilla",
+      "Darwi",
+      "Miles",
+      "Tylwyth",
+      "Gaius",
+      "Anirul",
+      "Chalice",
+      "Serena"
+    ],
+    "imperial_surname": [
+      "Atreides",
+      "Harkonnen",
+      "Corrino",
+      "Moritani",
+      "Vernius",
+      "Richese",
+      "Ecaz",
+      "Fenring",
+      "Ginaz",
+      "Molay",
+      "Kenric",
+      "Taligari",
+      "Thorvald",
+      "Bular",
+      "Nefud",
+      "Rabban",
+      "Hawat",
+      "Halleck",
+      "Idaho",
+      "De Vries",
+      "Yueh",
+      "Blond",
+      "Kadur"
+    ],
+    "fremen_first": [
+      "Stilgar",
+      "Jamis",
+      "Liet",
+      "Pardot",
+      "Chani",
+      "Harah",
+      "Shadout",
+      "Mapes",
+      "Farok",
+      "Otheym",
+      "Korba",
+      "Shimay",
+      "Geoff",
+      "Jahid",
+      "Barkan",
+      "Assan",
+      "Kastur",
+      "Taneg",
+      "Daryal",
+      "El-Nur",
+      "Ziam",
+      "Mura",
+      "Sabiha",
+      "Tirza"
+    ],
+    "fremen_sietch": [
+      "Tabr",
+      "Chin Rock",
+      "Clave",
+      "Red Chasm",
+      "Tuono",
+      "Bight",
+      "Jacurutu",
+      "Sihaya",
+      "Carthag Outskirts",
+      "Gara Kulon",
+      "Habbanya",
+      "Tirzah"
+    ]
+  }
+};
+</script>
+
+<!-- APP LOGIC & STATE ENGINE -->
+<script>
+let activeChar = null;
+let currentStep = 1;
+
+// Default character generator
+function createDefaultCharacter() {
+    return {
+        name: "Paul Atreides",
+        player_name: "",
+        concept: "Noble scion and heir to House Atreides with secret Bene Gesserit conditioning.",
+        character_type: "Player Character",
+        house: "House Atreides",
+        homeworld: "Caladan",
+        house_role: "Heir",
+        house_trait: "",
+        faction: "Bene Gesserit Sister",
+        faction_trait: "Bene Gesserit",
+        archetype: "Duelist",
+        archetype_trait: "Duelist",
+        personal_trait: "Observant",
+        skills: {
+            "Battle": 8,
+            "Communicate": 5,
+            "Discipline": 6,
+            "Move": 5,
+            "Understand": 4
+        },
+        focuses: [
+            { name: "Short Blades", skill: "Battle" },
+            { name: "Dueling", skill: "Battle" },
+            { name: "Body Control", skill: "Move" },
+            { name: "Empathy", skill: "Communicate" }
+        ],
+        drives: {
+            "Duty": 8,
+            "Justice": 7,
+            "Truth": 6,
+            "Power": 5,
+            "Faith": 4
+        },
+        drive_statements: {
+            "Duty": "I serve at the pleasure of the House.",
+            "Justice": "I must shield those in my care.",
+            "Truth": "Respect for the truth comes close to being the basis for all morality."
+        },
+        ambition: "Avenge the slaughter of my kin in an honorable kanly feud.",
+        determination: 1,
+        talents: [
+            { name: "Prana-bindu Conditioning", specialization: null, description: "Your control over your nervous and muscular systems is complete." },
+            { name: "The Slow Blade", specialization: null, description: "You excel at slipping blades through personal shields." },
+            { name: "Voice", specialization: null, description: "You can command others by finding the pitch that subdues their will." }
+        ],
+        assets: [
+            { name: "Kindjal", asset_type: "Tangible", quality: 0, traits: ["Blade", "Melee", "Concealed"], description: "A traditional double-edged long dagger favored by nobility." },
+            { name: "Personal Shield", asset_type: "Tangible", quality: 0, traits: ["Holtzman Field", "Kinetic Deflector"], description: "Waist-worn Holtzman generator creating a kinetic barrier." },
+            { name: "Significant Favor Owed", asset_type: "Intangible", quality: 1, traits: ["Leverage", "High-Value"], description: "A blood debt or political marker owed by an influential noble." }
+        ],
+        appearance: "Lean aristocratic frame, keen sea-green eyes, dark tousled hair.",
+        personality: "Solemn, highly perceptive, carrying the weight of ancient lineage.",
+        relationships: "Heir to Duke Leto; trained by Gurney Halleck and Duncan Idaho.",
+        notes: ""
+    };
+}
+
+// Initialize application
+window.addEventListener("DOMContentLoaded", () => {
+    activeChar = createDefaultCharacter();
+    populateSelectOptions();
+    renderAllWizardFields();
+    updateAudit();
+    renderSheetViews();
+});
+
+// Populate select options
+function populateSelectOptions() {
+    // Factions
+    const facSelect = document.getElementById("w-faction");
+    const randFacSelect = document.getElementById("rand-faction");
+    facSelect.innerHTML = "";
+    randFacSelect.innerHTML = '<option value="">Any Faction</option>';
+    for (const fKey in DUNE_DATA.factions) {
+        const opt = document.createElement("option");
+        opt.value = fKey;
+        opt.textContent = DUNE_DATA.factions[fKey].name;
+        facSelect.appendChild(opt);
+
+        const randOpt = document.createElement("option");
+        randOpt.value = fKey;
+        randOpt.textContent = DUNE_DATA.factions[fKey].name;
+        randFacSelect.appendChild(randOpt);
+    }
+
+    // Archetypes
+    const archSelect = document.getElementById("w-archetype");
+    const randArchSelect = document.getElementById("rand-archetype");
+    archSelect.innerHTML = "";
+    randArchSelect.innerHTML = '<option value="">Any Archetype</option>';
+    for (const aName in DUNE_DATA.archetypes) {
+        const opt = document.createElement("option");
+        opt.value = aName;
+        opt.textContent = aName;
+        archSelect.appendChild(opt);
+
+        const randOpt = document.createElement("option");
+        randOpt.value = aName;
+        randOpt.textContent = aName;
+        randArchSelect.appendChild(randOpt);
+    }
+
+    // Houses
+    const houseSelect = document.getElementById("w-house");
+    const randHouseSelect = document.getElementById("rand-house");
+    const npcHouseSelect = document.getElementById("npc-house");
+    houseSelect.innerHTML = "";
+    randHouseSelect.innerHTML = '<option value="">Any House</option>';
+    npcHouseSelect.innerHTML = "";
+    DUNE_DATA.houses.forEach(h => {
+        const opt = document.createElement("option");
+        opt.value = h;
+        opt.textContent = h;
+        houseSelect.appendChild(opt);
+
+        const randOpt = document.createElement("option");
+        randOpt.value = h;
+        randOpt.textContent = h;
+        randHouseSelect.appendChild(randOpt);
+
+        const npcOpt = document.createElement("option");
+        npcOpt.value = h;
+        npcOpt.textContent = h;
+        npcHouseSelect.appendChild(npcOpt);
+    });
+
+    // Homeworlds
+    const hwSelect = document.getElementById("w-homeworld");
+    hwSelect.innerHTML = "";
+    DUNE_DATA.homeworlds.forEach(hw => {
+        const opt = document.createElement("option");
+        opt.value = hw;
+        opt.textContent = hw;
+        hwSelect.appendChild(opt);
+    });
+
+    // Roles
+    const roleSelect = document.getElementById("w-role");
+    roleSelect.innerHTML = "";
+    DUNE_DATA.house_roles.forEach(r => {
+        const opt = document.createElement("option");
+        opt.value = r;
+        opt.textContent = r;
+        roleSelect.appendChild(opt);
+    });
+
+    // Traits
+    const traitSelect = document.getElementById("w-trait");
+    traitSelect.innerHTML = "";
+    DUNE_DATA.personal_traits.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        traitSelect.appendChild(opt);
+    });
+}
+
+function renderAllWizardFields() {
+    if (!activeChar) return;
+
+    // Step 1
+    document.getElementById("w-name").value = activeChar.name || "";
+    document.getElementById("w-concept").value = activeChar.concept || "";
+    document.getElementById("w-faction").value = activeChar.faction;
+    document.getElementById("w-house").value = activeChar.house;
+    document.getElementById("w-homeworld").value = activeChar.homeworld;
+    document.getElementById("w-role").value = activeChar.house_role;
+    document.getElementById("w-trait").value = activeChar.personal_trait;
+    onFactionChange(activeChar.faction, false);
+
+    // Step 2
+    document.getElementById("w-archetype").value = activeChar.archetype;
+    onArchetypeChange(activeChar.archetype, false);
+
+    // Step 3
+    renderSkillsAndFocuses();
+
+    // Step 4
+    renderTalents();
+
+    // Step 5
+    renderDrives();
+
+    // Step 6
+    renderAssets();
+
+    // Step 7
+    renderAmbitionAndDetails();
+}
+
+function updateChar(prop, val) {
+    if (!activeChar) return;
+    activeChar[prop] = val;
+    updateAudit();
+    renderSheetViews();
+}
+
+// Navigation between Modes
+function switchMode(modeName) {
+    const modes = ["wizard", "random", "npc", "sheet", "vault"];
+    modes.forEach(m => {
+        const el = document.getElementById("mode-" + m);
+        if (el) el.style.display = (m === modeName) ? "block" : "none";
+    });
+
+    document.querySelectorAll(".nav-tab").forEach((btn, idx) => {
+        btn.classList.toggle("active", modes[idx] === modeName);
+    });
+
+    if (modeName === "sheet" || modeName === "wizard") {
+        renderSheetViews();
+    }
+}
+
+// Navigation between Wizard Steps
+function goToStep(stepNum) {
+    currentStep = stepNum;
+    for (let i = 1; i <= 8; i++) {
+        const p = document.getElementById("step-" + i);
+        if (p) p.style.display = (i === stepNum) ? "block" : "none";
+    }
+
+    document.querySelectorAll(".wizard-step-btn").forEach((btn, idx) => {
+        btn.classList.toggle("active", idx + 1 === stepNum);
+        btn.classList.toggle("completed", idx + 1 < stepNum);
+    });
+
+    if (stepNum === 8) {
+        renderSheetViews();
+    }
+}
+
+// Faction Change Handler
+function onFactionChange(facVal, doRender = true) {
+    activeChar.faction = facVal;
+    const facInfo = DUNE_DATA.factions[facVal];
+    activeChar.faction_trait = facInfo ? facInfo.additional_trait : "";
+
+    const infoBox = document.getElementById("w-faction-info");
+    if (facInfo) {
+        let text = `<strong>${facInfo.name}</strong> — ${facInfo.description}<br>`;
+        if (facInfo.additional_trait) text += `<strong>Bonus Trait:</strong> <span class="badge">${facInfo.additional_trait}</span> `;
+        if (facInfo.mandatory_talents && facInfo.mandatory_talents.length > 0) {
+            const req = facInfo.require_all_mandatory ? "ALL required" : "Pick at least ONE";
+            text += `| <strong>Mandatory Talents (${req}):</strong> ${facInfo.mandatory_talents.map(t => `<code>${t}</code>`).join(", ")}`;
+        }
+        infoBox.innerHTML = text;
+    }
+
+    if (doRender) {
+        renderTalents();
+        updateAudit();
+        renderSheetViews();
+    }
+}
+
+// Archetype Change Handler
+function onArchetypeChange(archName, doRender = true) {
+    activeChar.archetype = archName;
+    activeChar.archetype_trait = archName;
+    const arch = DUNE_DATA.archetypes[archName];
+
+    const detailBox = document.getElementById("w-arch-details");
+    if (arch) {
+        detailBox.innerHTML = `
+            <div style="font-size: 0.95rem; margin-bottom: 8px;">${arch.description}</div>
+            <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.88rem;">
+                <div><strong>Primary Skill:</strong> <span class="badge" style="background:#ffd8a8; color:#7a3818;">${arch.primary_skill} (Starts at 6)</span></div>
+                <div><strong>Secondary Skill:</strong> <span class="badge" style="background:#d0ebff; color:#1864ab;">${arch.secondary_skill} (Starts at 5)</span></div>
+                <div><strong>Suggested Talent:</strong> <code>${arch.suggested_talent}</code></div>
+            </div>
+            <div style="margin-top: 8px; font-size: 0.82rem; color: var(--text-muted);">
+                <strong>Philosophy:</strong> <em>${arch.drive_advice}</em>
+            </div>
+        `;
+    }
+
+    if (doRender) {
+        renderSkillsAndFocuses();
+        updateAudit();
+        renderSheetViews();
+    }
+}
+
+// Name Generator
+function suggestName() {
+    const isFremen = activeChar.faction.toLowerCase().includes("fremen");
+    let name = "";
+    if (isFremen) {
+        const first = DUNE_DATA.names.fremen_first[Math.floor(Math.random() * DUNE_DATA.names.fremen_first.length)];
+        const sietch = DUNE_DATA.names.fremen_sietch[Math.floor(Math.random() * DUNE_DATA.names.fremen_sietch.length)];
+        name = Math.random() < 0.4 ? `${first} of Sietch ${sietch}` : first;
+    } else {
+        const first = DUNE_DATA.names.imperial_first[Math.floor(Math.random() * DUNE_DATA.names.imperial_first.length)];
+        const surname = DUNE_DATA.names.imperial_surname[Math.floor(Math.random() * DUNE_DATA.names.imperial_surname.length)];
+        name = `${first} ${surname}`;
+    }
+    activeChar.name = name;
+    document.getElementById("w-name").value = name;
+    updateAudit();
+    renderSheetViews();
+}
+
+// Skills & Focuses Rendering
+function renderSkillsAndFocuses() {
+    const container = document.getElementById("skills-container");
+    container.innerHTML = "";
+    const arch = DUNE_DATA.archetypes[activeChar.archetype];
+
+    let totalPoints = 0;
+
+    DUNE_DATA.skills.forEach(sk => {
+        const val = activeChar.skills[sk] || 4;
+        totalPoints += val;
+
+        const isPri = arch && arch.primary_skill === sk;
+        const isSec = arch && arch.secondary_skill === sk;
+        const tagHtml = isPri ? '<span class="skill-tag skill-tag-primary">Primary (6)</span>' : (isSec ? '<span class="skill-tag skill-tag-secondary">Secondary (5)</span>' : '');
+
+        const row = document.createElement("div");
+        row.className = "skill-row";
+        row.innerHTML = `
+            <div class="skill-info">
+                <span class="skill-name">${sk}</span>
+                ${tagHtml}
+                <div style="font-size: 0.75rem; color: var(--text-muted);">${DUNE_DATA.skill_descriptions[sk]}</div>
+            </div>
+            <div class="counter-control">
+                <button class="counter-btn" onclick="adjustSkill('${sk}', -1)">-</button>
+                <span class="counter-val">${val}</span>
+                <button class="counter-btn" onclick="adjustSkill('${sk}', 1)">+</button>
+            </div>
+        `;
+        container.appendChild(row);
+    });
+
+    // Update budget bar
+    const badge = document.getElementById("skill-budget-badge");
+    const bar = document.getElementById("budget-fill");
+    badge.textContent = `Allocated: ${totalPoints} / 28`;
+    
+    const pct = Math.min(100, (totalPoints / 28) * 100);
+    bar.style.width = pct + "%";
+    bar.className = "budget-fill " + (totalPoints === 28 ? "exact" : (totalPoints > 28 ? "over" : ""));
+
+    // Render 4 Focuses
+    const fcContainer = document.getElementById("focuses-container");
+    fcContainer.innerHTML = "";
+
+    const hint = document.getElementById("primary-focus-hint");
+    if (arch) {
+        hint.textContent = `At least 1 focus must be assigned to your primary skill: ${arch.primary_skill}.`;
+    }
+
+    while (activeChar.focuses.length < 4) {
+        activeChar.focuses.push({ name: "General", skill: arch ? arch.primary_skill : "Battle" });
+    }
+
+    activeChar.focuses.forEach((fc, idx) => {
+        const fRow = document.createElement("div");
+        fRow.className = "grid-2";
+        fRow.style.marginBottom = "10px";
+
+        // Skill selector
+        let skOptions = DUNE_DATA.skills.map(s => `<option value="${s}" ${s === fc.skill ? 'selected' : ''}>${s}</option>`).join("");
+        
+        // Focus name selector (standard options + custom)
+        const stdList = DUNE_DATA.standard_focuses[fc.skill] || [];
+        let optHtml = stdList.map(f => `<option value="${f}" ${f === fc.name ? 'selected' : ''}>${f}</option>`).join("");
+        optHtml += `<option value="__custom__" ${!stdList.includes(fc.name) ? 'selected' : ''}>Custom Focus...</option>`;
+
+        fRow.innerHTML = `
+            <div>
+                <label class="form-label" style="font-size:0.75rem;">Skill #${idx + 1}</label>
+                <select onchange="updateFocusSkill(${idx}, this.value)">${skOptions}</select>
+            </div>
+            <div>
+                <label class="form-label" style="font-size:0.75rem;">Focus Specialty #${idx + 1}</label>
+                <select id="fc-sel-${idx}" onchange="updateFocusName(${idx}, this.value)">${optHtml}</select>
+                <input type="text" id="fc-cust-${idx}" style="display: ${!stdList.includes(fc.name) ? 'block' : 'none'}; margin-top: 4px;" value="${!stdList.includes(fc.name) ? fc.name : ''}" placeholder="Enter custom focus" oninput="activeChar.focuses[${idx}].name = this.value; updateAudit();">
+            </div>
+        `;
+        fcContainer.appendChild(fRow);
+    });
+}
+
+function adjustSkill(sk, delta) {
+    const curr = activeChar.skills[sk] || 4;
+    const nextVal = curr + delta;
+    if (nextVal >= 4 && nextVal <= 8) {
+        activeChar.skills[sk] = nextVal;
+        renderSkillsAndFocuses();
+        updateAudit();
+        renderSheetViews();
+    }
+}
+
+function updateFocusSkill(idx, newSk) {
+    activeChar.focuses[idx].skill = newSk;
+    const std = DUNE_DATA.standard_focuses[newSk] || ["General"];
+    activeChar.focuses[idx].name = std[0];
+    renderSkillsAndFocuses();
+    updateAudit();
+    renderSheetViews();
+}
+
+function updateFocusName(idx, val) {
+    const custInput = document.getElementById(`fc-cust-${idx}`);
+    if (val === "__custom__") {
+        custInput.style.display = "block";
+        activeChar.focuses[idx].name = custInput.value || "Specialty";
+    } else {
+        custInput.style.display = "none";
+        activeChar.focuses[idx].name = val;
+    }
+    updateAudit();
+    renderSheetViews();
+}
+
+// Talents Rendering
+function renderTalents() {
+    const container = document.getElementById("talents-container");
+    container.innerHTML = "";
+
+    const facInfo = DUNE_DATA.factions[activeChar.faction];
+    const facTalentNote = document.getElementById("talent-faction-note");
+
+    if (facInfo && facInfo.mandatory_talents && facInfo.mandatory_talents.length > 0) {
+        const req = facInfo.require_all_mandatory ? "ALL required" : "At least ONE required";
+        facTalentNote.innerHTML = `<strong>Faction Mandatory Talents (${req}):</strong> ${facInfo.mandatory_talents.map(t => `<code>${t}</code>`).join(", ")}`;
+    } else {
+        facTalentNote.innerHTML = "<em>No mandatory faction talents required. Choose any 3 universal talents or archetype suggestions.</em>";
+    }
+
+    while (activeChar.talents.length < 3) {
+        activeChar.talents.push({ name: "Bold", specialization: null, description: "" });
+    }
+
+    // Available talents
+    const availTalents = [];
+    for (const tName in DUNE_DATA.talents) {
+        const t = DUNE_DATA.talents[tName];
+        if (!t.faction_requirement || (activeChar.faction && activeChar.faction.toLowerCase().includes(t.faction_requirement.toLowerCase()))) {
+            availTalents.push(t);
+        }
+    }
+
+    activeChar.talents.forEach((tItem, idx) => {
+        const tCard = document.createElement("div");
+        tCard.className = "card";
+        tCard.style.padding = "16px";
+        tCard.style.marginBottom = "12px";
+
+        let optHtml = availTalents.map(t => `<option value="${t.name}" ${t.name === tItem.name ? 'selected' : ''}>${t.name}${t.faction_requirement ? ` (${t.faction_requirement})` : ''}</option>`).join("");
+
+        const tDef = DUNE_DATA.talents[tItem.name];
+
+        tCard.innerHTML = `
+            <div class="grid-2">
+                <div>
+                    <label class="form-label">Talent #${idx + 1}</label>
+                    <select onchange="updateTalent(${idx}, this.value)">${optHtml}</select>
+                </div>
+                <div id="talent-spec-${idx}"></div>
+            </div>
+            <div style="margin-top: 10px; font-size: 0.85rem;">
+                <div style="font-style: italic; color: var(--spice-dark);">${tDef ? tDef.flavor : ''}</div>
+                <div style="margin-top: 4px; color: #333;">${tDef ? tDef.rules : tItem.description}</div>
+            </div>
+        `;
+        container.appendChild(tCard);
+
+        // Parameter selector
+        const specBox = tCard.querySelector(`#talent-spec-${idx}`);
+        if (tDef && tDef.skill_param) {
+            specBox.innerHTML = `
+                <label class="form-label">Skill Specialization</label>
+                <select onchange="activeChar.talents[${idx}].specialization = this.value; renderSheetViews();">
+                    ${DUNE_DATA.skills.map(s => `<option value="${s}" ${s === tItem.specialization ? 'selected' : ''}>${s}</option>`).join("")}
+                </select>
+            `;
+            if (!tItem.specialization) tItem.specialization = DUNE_DATA.skills[0];
+        } else if (tDef && tDef.drive_param) {
+            specBox.innerHTML = `
+                <label class="form-label">Drive Specialization</label>
+                <select onchange="activeChar.talents[${idx}].specialization = this.value; renderSheetViews();">
+                    ${DUNE_DATA.drives.map(d => `<option value="${d}" ${d === tItem.specialization ? 'selected' : ''}>${d}</option>`).join("")}
+                </select>
+            `;
+            if (!tItem.specialization) tItem.specialization = "Duty";
+        }
+    });
+}
+
+function updateTalent(idx, newTName) {
+    const tDef = DUNE_DATA.talents[newTName];
+    activeChar.talents[idx] = {
+        name: newTName,
+        specialization: null,
+        description: tDef ? tDef.rules : ""
+    };
+    renderTalents();
+    updateAudit();
+    renderSheetViews();
+}
+
+// Drives & Statements Rendering
+function renderDrives() {
+    const scoreContainer = document.getElementById("drives-score-container");
+    scoreContainer.innerHTML = "";
+
+    DUNE_DATA.drives.forEach(d => {
+        const row = document.createElement("div");
+        row.className = "skill-row";
+        row.style.padding = "6px 12px";
+
+        const val = activeChar.drives[d] || 4;
+        let optHtml = [8, 7, 6, 5, 4].map(v => `<option value="${v}" ${v === val ? 'selected' : ''}>${v}</option>`).join("");
+
+        row.innerHTML = `
+            <div class="skill-info">
+                <span class="skill-name">${d}</span>
+                <div style="font-size: 0.72rem; color: var(--text-muted);">${DUNE_DATA.drive_descriptions[d]}</div>
+            </div>
+            <select style="width: 70px;" onchange="updateDriveScore('${d}', parseInt(this.value))">${optHtml}</select>
+        `;
+        scoreContainer.appendChild(row);
+    });
+
+    renderDriveStatements();
+}
+
+function updateDriveScore(drive, newScore) {
+    activeChar.drives[drive] = newScore;
+    renderDrives();
+    updateAudit();
+    renderSheetViews();
+}
+
+function renderDriveStatements() {
+    const stmtContainer = document.getElementById("drive-statements-container");
+    stmtContainer.innerHTML = "";
+
+    // Top 3 drives (ratings >= 6)
+    const topDrives = Object.keys(activeChar.drives)
+        .filter(d => activeChar.drives[d] >= 6)
+        .sort((a, b) => activeChar.drives[b] - activeChar.drives[a]);
+
+    topDrives.forEach(d => {
+        const sDiv = document.createElement("div");
+        sDiv.style.marginBottom = "14px";
+        const currStmt = activeChar.drive_statements[d] || "";
+
+        const stdStatements = DUNE_DATA.drive_statements[d] || [];
+        let optHtml = stdStatements.map(st => `<option value="${st}" ${st === currStmt ? 'selected' : ''}>${st}</option>`).join("");
+        optHtml += `<option value="__custom__" ${!stdStatements.includes(currStmt) ? 'selected' : ''}>Custom Statement...</option>`;
+
+        sDiv.innerHTML = `
+            <label class="form-label" style="display:flex; justify-content:space-between;">
+                <span>${d} Statement</span>
+                <span class="badge" style="background:#ffd8a8; color:#7a3818;">Score: ${activeChar.drives[d]}</span>
+            </label>
+            <select id="stmt-sel-${d}" onchange="updateDriveStatement('${d}', this.value)">${optHtml}</select>
+            <input type="text" id="stmt-cust-${d}" style="display: ${!stdStatements.includes(currStmt) ? 'block' : 'none'}; margin-top: 4px;" value="${!stdStatements.includes(currStmt) ? currStmt : ''}" placeholder="Enter custom statement" oninput="activeChar.drive_statements['${d}'] = this.value; updateAudit();">
+        `;
+        stmtContainer.appendChild(sDiv);
+    });
+}
+
+function updateDriveStatement(drive, val) {
+    const custInput = document.getElementById(`stmt-cust-${drive}`);
+    if (val === "__custom__") {
+        custInput.style.display = "block";
+        activeChar.drive_statements[drive] = custInput.value || "I stand by my principles.";
+    } else {
+        custInput.style.display = "none";
+        activeChar.drive_statements[drive] = val;
+    }
+    updateAudit();
+    renderSheetViews();
+}
+
+// Assets Rendering
+function renderAssets() {
+    const container = document.getElementById("assets-container");
+    container.innerHTML = "";
+
+    while (activeChar.assets.length < 3) {
+        activeChar.assets.push({ name: "Kindjal", asset_type: "Tangible", quality: 0, traits: [], description: "" });
+    }
+
+    const assetNames = Object.keys(DUNE_DATA.assets);
+
+    activeChar.assets.forEach((aItem, idx) => {
+        const card = document.createElement("div");
+        card.className = "card";
+        card.style.padding = "16px";
+        card.style.marginBottom = "12px";
+
+        let optHtml = assetNames.map(an => `<option value="${an}" ${an === aItem.name ? 'selected' : ''}>${an} (${DUNE_DATA.assets[an].asset_type})</option>`).join("");
+
+        const aDef = DUNE_DATA.assets[aItem.name] || aItem;
+
+        card.innerHTML = `
+            <div class="grid-2">
+                <div class="form-group">
+                    <label class="form-label">Asset #${idx + 1}</label>
+                    <select onchange="updateAsset(${idx}, this.value)">${optHtml}</select>
+                </div>
+                <div style="display: flex; gap: 8px; align-items: flex-end; margin-bottom: 16px;">
+                    <span class="badge ${aDef.asset_type === 'Tangible' ? 'badge-tangible' : 'badge-intangible'}">${aDef.asset_type}</span>
+                    ${aDef.quality > 0 ? `<span class="badge badge-quality">Quality ${aDef.quality}</span>` : ''}
+                    ${(aDef.traits || []).map(tr => `<span class="badge">${tr}</span>`).join(" ")}
+                </div>
+            </div>
+            <div style="font-size: 0.85rem; color: #555; font-style: italic;">${aDef.description || ''}</div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function updateAsset(idx, assetName) {
+    const aDef = DUNE_DATA.assets[assetName];
+    if (aDef) {
+        activeChar.assets[idx] = {
+            name: aDef.name,
+            asset_type: aDef.asset_type,
+            quality: aDef.quality,
+            traits: [...aDef.traits],
+            description: aDef.description
+        };
+    }
+    renderAssets();
+    updateAudit();
+    renderSheetViews();
+}
+
+// Ambition Rendering
+function renderAmbitionAndDetails() {
+    let highestDrive = "Duty";
+    let highestVal = -1;
+    for (const d in activeChar.drives) {
+        if (activeChar.drives[d] > highestVal) {
+            highestVal = activeChar.drives[d];
+            highestDrive = d;
+        }
+    }
+
+    const hint = document.getElementById("highest-drive-hint");
+    hint.innerHTML = `Your highest-rated drive is <strong>${highestDrive} (${highestVal})</strong>. Core Rules recommend choosing an ambition aligned with this drive.`;
+
+    const ambSelect = document.getElementById("w-ambition-select");
+    const ambInput = document.getElementById("w-ambition-text");
+    const stdAmbs = DUNE_DATA.ambition_examples[highestDrive] || [];
+
+    let optHtml = stdAmbs.map(amb => `<option value="${amb}" ${amb === activeChar.ambition ? 'selected' : ''}>${amb}</option>`).join("");
+    optHtml += `<option value="__custom__" ${!stdAmbs.includes(activeChar.ambition) ? 'selected' : ''}>Custom Ambition...</option>`;
+    ambSelect.innerHTML = optHtml;
+
+    ambInput.value = activeChar.ambition || (stdAmbs[0] || "");
+    if (!activeChar.ambition) activeChar.ambition = stdAmbs[0] || "";
+
+    document.getElementById("w-appearance").value = activeChar.appearance || "";
+    document.getElementById("w-personality").value = activeChar.personality || "";
+    document.getElementById("w-relationships").value = activeChar.relationships || "";
+    document.getElementById("w-notes").value = activeChar.notes || "";
+}
+
+function onAmbitionSelect(val) {
+    const ambInput = document.getElementById("w-ambition-text");
+    if (val !== "__custom__") {
+        ambInput.value = val;
+        activeChar.ambition = val;
+    }
+    updateAudit();
+    renderSheetViews();
+}
+
+// ==============================================
+// AUDIT & VALIDATION ENGINE
+// ==============================================
+function updateAudit() {
+    const list = document.getElementById("audit-list");
+    list.innerHTML = "";
+
+    const checks = {};
+    const errors = [];
+
+    // 1. Skill sum
+    let skillSum = 0;
+    for (const sk in activeChar.skills) skillSum += activeChar.skills[sk];
+    checks["Skill Points Total (28)"] = (skillSum === 28);
+    if (skillSum !== 28) errors.push(`Skills total is ${skillSum}/28`);
+
+    // 2. Archetype baselines
+    const arch = DUNE_DATA.archetypes[activeChar.archetype];
+    if (arch) {
+        checks[`Primary Skill (${arch.primary_skill} >= 6)`] = (activeChar.skills[arch.primary_skill] >= 6);
+        checks[`Secondary Skill (${arch.secondary_skill} >= 5)`] = (activeChar.skills[arch.secondary_skill] >= 5);
+        
+        // Focus in primary
+        const priFocuses = activeChar.focuses.filter(f => f.skill === arch.primary_skill);
+        checks[`Focus in Primary Skill (${arch.primary_skill})`] = (priFocuses.length >= 1);
+    }
+
+    // 3. Exactly 4 Focuses
+    checks["4 Focuses Chosen"] = (activeChar.focuses.length === 4);
+
+    // 4. Talents (3 total + faction mandatory)
+    checks["3 Talents Chosen"] = (activeChar.talents.length === 3);
+    const facInfo = DUNE_DATA.factions[activeChar.faction];
+    if (facInfo && facInfo.mandatory_talents && facInfo.mandatory_talents.length > 0) {
+        const talentNames = activeChar.talents.map(t => t.name);
+        if (facInfo.require_all_mandatory) {
+            const allMet = facInfo.mandatory_talents.every(mt => talentNames.includes(mt));
+            checks["Faction Mandatory Talents Met"] = allMet;
+        } else {
+            const hasOne = facInfo.mandatory_talents.some(mt => talentNames.includes(mt));
+            checks["Faction Mandatory Talents Met"] = hasOne;
+        }
+    } else {
+        checks["Faction Mandatory Talents Met"] = true;
+    }
+
+    // 5. Drives [8, 7, 6, 5, 4]
+    const driveVals = Object.values(activeChar.drives).sort((a, b) => a - b);
+    const drivesOk = JSON.stringify(driveVals) === JSON.stringify([4, 5, 6, 7, 8]);
+    checks["Drives Assigned [8, 7, 6, 5, 4]"] = drivesOk;
+
+    // 6. Drive Statements (ratings >= 6)
+    const topDrives = Object.keys(activeChar.drives).filter(d => activeChar.drives[d] >= 6);
+    let stmtsOk = (topDrives.length === 3);
+    topDrives.forEach(d => {
+        if (!activeChar.drive_statements[d] || !activeChar.drive_statements[d].trim()) stmtsOk = false;
+    });
+    checks["3 Drive Statements (for 8, 7, 6)"] = stmtsOk;
+
+    // 7. Assets (3 assets, >= 1 tangible)
+    checks["3 Starting Assets"] = (activeChar.assets.length === 3);
+    const tangibleCount = activeChar.assets.filter(a => a.asset_type === "Tangible").length;
+    checks["At Least 1 Tangible Asset"] = (tangibleCount >= 1);
+
+    // Render checks
+    let allPass = true;
+    for (const [checkName, pass] of Object.entries(checks)) {
+        if (!pass) allPass = false;
+        const div = document.createElement("div");
+        div.className = "audit-item";
+        div.innerHTML = `
+            <span>${checkName}</span>
+            <span class="audit-status ${pass ? 'status-pass' : 'status-fail'}">${pass ? '✓ PASS' : '✗ FAIL'}</span>
+        `;
+        list.appendChild(div);
+    }
+
+    const summary = document.getElementById("audit-summary");
+    if (allPass) {
+        summary.innerHTML = '<span style="color: var(--success);">✓ 100% Rulebook Compliant</span>';
+    } else {
+        summary.innerHTML = '<span style="color: var(--danger);">✗ Validation Issues Detected</span>';
+    }
+}
+
+// ==============================================
+// SHEET PREVIEW RENDERING
+// ==============================================
+function renderSheetViews() {
+    const html = generateSheetHTML(activeChar);
+    const wizSheet = document.getElementById("wizard-sheet-view");
+    const randSheet = document.getElementById("random-sheet-view");
+    const stdSheet = document.getElementById("standalone-sheet-view");
+
+    if (wizSheet) wizSheet.innerHTML = html;
+    if (randSheet) randSheet.innerHTML = html;
+    if (stdSheet) stdSheet.innerHTML = html;
+}
+
+function generateSheetHTML(char) {
+    const traitsList = [];
+    if (char.personal_trait) traitsList.push(char.personal_trait);
+    if (char.archetype_trait) traitsList.push(char.archetype_trait);
+    if (char.faction_trait) traitsList.push(char.faction_trait);
+    if (char.house_trait) traitsList.push(char.house_trait);
+
+    // Skills
+    let skillsHtml = "";
+    DUNE_DATA.skills.forEach(sk => {
+        const val = char.skills[sk] || 4;
+        const fList = (char.focuses || []).filter(f => f.skill === sk).map(f => f.name);
+        skillsHtml += `
+            <tr>
+                <td style="font-weight: bold;">${sk}</td>
+                <td style="text-align: center; font-weight: bold; color: var(--spice-ember); font-size: 1.1rem;">${val}</td>
+                <td>${fList.length > 0 ? fList.join(", ") : '<span style="color:#aaa;">—</span>'}</td>
+            </tr>
+        `;
+    });
+
+    // Drives
+    let drivesHtml = "";
+    const sortedDrives = Object.keys(char.drives).sort((a, b) => char.drives[b] - char.drives[a]);
+    sortedDrives.forEach(d => {
+        const val = char.drives[d];
+        const stmt = char.drive_statements[d] || "";
+        drivesHtml += `
+            <tr>
+                <td style="font-weight: bold;">${d}</td>
+                <td style="text-align: center; font-weight: bold; color: var(--spice-ember); font-size: 1.1rem;">${val}</td>
+                <td style="font-style: italic;">${stmt ? `"${stmt}"` : '<span style="color:#aaa;">—</span>'}</td>
+            </tr>
+        `;
+    });
+
+    // Talents
+    let talentsHtml = "";
+    (char.talents || []).forEach(t => {
+        const specStr = t.specialization ? ` (${t.specialization})` : "";
+        talentsHtml += `
+            <div style="background: #faf7f2; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; margin-bottom: 8px;">
+                <div style="font-weight: bold; color: var(--spice-dark); font-size: 0.95rem;">${t.name}${specStr}</div>
+                <div style="font-size: 0.84rem; margin-top: 4px; color: #333;">${t.description}</div>
+            </div>
+        `;
+    });
+
+    // Assets
+    let assetsHtml = "";
+    (char.assets || []).forEach(a => {
+        const traitsBadges = (a.traits || []).map(tr => `<span class="badge">${tr}</span>`).join(" ");
+        assetsHtml += `
+            <div style="background: #faf7f2; border: 1px solid var(--border-color); border-radius: 6px; padding: 10px 14px; margin-bottom: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
+                    <span style="font-weight: bold; font-size: 0.95rem;">${a.name}</span>
+                    <span class="badge ${a.asset_type === 'Tangible' ? 'badge-tangible' : 'badge-intangible'}">${a.asset_type}</span>
+                    ${a.quality > 0 ? `<span class="badge badge-quality">Quality ${a.quality}</span>` : ''}
+                </div>
+                <div style="margin-bottom: 4px;">${traitsBadges}</div>
+                <div style="font-size: 0.8rem; font-style: italic; color: #555;">${a.description || ''}</div>
+            </div>
+        `;
+    });
+
+    return `
+        <div class="sheet-header">
+            <div>
+                <div class="sheet-name">${char.name}</div>
+                <div class="sheet-concept">${char.concept || ''}</div>
+            </div>
+            <div style="background: linear-gradient(135deg, var(--spice-gold), var(--spice-ember)); color:#fff; padding: 6px 16px; border-radius: 6px; text-align: center;">
+                <div style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Determination</div>
+                <div style="font-size: 1.4rem; font-weight: bold;">${char.determination || 1}</div>
+            </div>
+        </div>
+
+        <div class="sheet-meta-grid">
+            <div><strong>House:</strong> ${char.house} (${char.homeworld})</div>
+            <div><strong>Role:</strong> ${char.house_role}</div>
+            <div><strong>Archetype:</strong> ${char.archetype}</div>
+            ${char.faction && char.faction !== 'None (House Retainer / Independent)' ? `<div><strong>Faction:</strong> ${char.faction}</div>` : ''}
+            <div><strong>Traits:</strong> ${traitsList.map(t => `<span class="badge">${t}</span>`).join(" ")}</div>
+        </div>
+
+        ${char.ambition ? `
+        <div style="background: #faf5eb; border-left: 4px solid var(--spice-ember); padding: 10px 14px; border-radius: 0 6px 6px 0; margin-bottom: 18px;">
+            <div style="font-size: 0.72rem; text-transform: uppercase; font-weight: bold; color: var(--spice-ember); letter-spacing: 0.5px;">Ambition</div>
+            <div style="font-style: italic; font-size: 0.95rem;">${char.ambition}</div>
+        </div>
+        ` : ''}
+
+        <div class="grid-2">
+            <div>
+                <h4 style="font-family: Georgia, serif; font-size: 1.1rem; color: var(--imperial-dark); border-bottom: 1.5px solid var(--spice-gold); padding-bottom: 4px; margin-bottom: 10px;">Skills & Focuses</h4>
+                <table class="table-dune">
+                    <thead><tr><th>Skill</th><th style="text-align:center;">Val</th><th>Focuses</th></tr></thead>
+                    <tbody>${skillsHtml}</tbody>
+                </table>
+
+                <h4 style="font-family: Georgia, serif; font-size: 1.1rem; color: var(--imperial-dark); border-bottom: 1.5px solid var(--spice-gold); padding-bottom: 4px; margin-bottom: 10px;">Drives & Statements</h4>
+                <table class="table-dune">
+                    <thead><tr><th>Drive</th><th style="text-align:center;">Val</th><th>Statement</th></tr></thead>
+                    <tbody>${drivesHtml}</tbody>
+                </table>
+            </div>
+
+            <div>
+                <h4 style="font-family: Georgia, serif; font-size: 1.1rem; color: var(--imperial-dark); border-bottom: 1.5px solid var(--spice-gold); padding-bottom: 4px; margin-bottom: 10px;">Talents</h4>
+                ${talentsHtml}
+
+                <h4 style="font-family: Georgia, serif; font-size: 1.1rem; color: var(--imperial-dark); border-bottom: 1.5px solid var(--spice-gold); padding-bottom: 4px; margin-bottom: 10px; margin-top: 18px;">Starting Assets</h4>
+                ${assetsHtml}
+            </div>
+        </div>
+
+        ${(char.appearance || char.personality || char.relationships || char.notes) ? `
+        <div style="margin-top: 18px; padding: 14px; background: #faf7f2; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.85rem;">
+            ${char.appearance ? `<p style="margin-bottom: 6px;"><strong>Appearance:</strong> ${char.appearance}</p>` : ''}
+            ${char.personality ? `<p style="margin-bottom: 6px;"><strong>Personality:</strong> ${char.personality}</p>` : ''}
+            ${char.relationships ? `<p style="margin-bottom: 6px;"><strong>Relationships:</strong> ${char.relationships}</p>` : ''}
+            ${char.notes ? `<p><strong>Notes:</strong> ${char.notes}</p>` : ''}
+        </div>
+        ` : ''}
+    `;
+}
+
+// ==============================================
+// RANDOM PC GENERATOR ALGORITHM
+// ==============================================
+function generateRandomPC(factionOverride = null, archetypeOverride = null, houseOverride = null) {
+    // 1. Faction
+    let faction = factionOverride;
+    if (!faction) {
+        const facKeys = Object.keys(DUNE_DATA.factions);
+        // Bias slightly to none
+        const pool = ["None (House Retainer / Independent)", "None (House Retainer / Independent)", ...facKeys];
+        faction = pool[Math.floor(Math.random() * pool.length)];
+    }
+    const facInfo = DUNE_DATA.factions[faction];
+
+    // 2. Archetype
+    let archetype = archetypeOverride;
+    if (!archetype) {
+        if (facInfo && facInfo.suggested_archetypes && facInfo.suggested_archetypes.length > 0 && Math.random() < 0.8) {
+            archetype = facInfo.suggested_archetypes[Math.floor(Math.random() * facInfo.suggested_archetypes.length)];
+        } else {
+            const allArchs = Object.keys(DUNE_DATA.archetypes);
+            archetype = allArchs[Math.floor(Math.random() * allArchs.length)];
+        }
+    }
+    const arch = DUNE_DATA.archetypes[archetype];
+
+    // 3. House & Homeworld
+    let house = houseOverride;
+    if (!house) {
+        house = faction === "Fremen" ? "Independent / Fremen Tribe" : DUNE_DATA.houses[Math.floor(Math.random() * DUNE_DATA.houses.length)];
+    }
+
+    let homeworld = "Caladan";
+    if (faction === "Fremen") homeworld = "Arrakis (Dune)";
+    else if (house.includes("Atreides")) homeworld = "Caladan";
+    else if (house.includes("Harkonnen")) homeworld = "Giedi Prime";
+    else if (house.includes("Corrino")) homeworld = "Kaitain";
+    else homeworld = DUNE_DATA.homeworlds[Math.floor(Math.random() * DUNE_DATA.homeworlds.length)];
+
+    // 4. Name & Role
+    let name = "";
+    if (faction === "Fremen") {
+        const first = DUNE_DATA.names.fremen_first[Math.floor(Math.random() * DUNE_DATA.names.fremen_first.length)];
+        const sietch = DUNE_DATA.names.fremen_sietch[Math.floor(Math.random() * DUNE_DATA.names.fremen_sietch.length)];
+        name = Math.random() < 0.4 ? `${first} of Sietch ${sietch}` : first;
+    } else {
+        const first = DUNE_DATA.names.imperial_first[Math.floor(Math.random() * DUNE_DATA.names.imperial_first.length)];
+        const surname = DUNE_DATA.names.imperial_surname[Math.floor(Math.random() * DUNE_DATA.names.imperial_surname.length)];
+        name = `${first} ${surname}`;
+    }
+
+    const role = DUNE_DATA.house_roles[Math.floor(Math.random() * DUNE_DATA.house_roles.length)];
+    const trait = DUNE_DATA.personal_traits[Math.floor(Math.random() * DUNE_DATA.personal_traits.length)];
+
+    // 5. Skills (Primary=6, Secondary=5, others=4, +5 free points, max 8)
+    const skills = {};
+    DUNE_DATA.skills.forEach(s => skills[s] = 4);
+    skills[arch.primary_skill] = 6;
+    skills[arch.secondary_skill] = 5;
+
+    let pointsLeft = 5;
+    const candidates = [arch.primary_skill, arch.primary_skill, arch.secondary_skill, ...DUNE_DATA.skills];
+    while (pointsLeft > 0) {
+        const sk = candidates[Math.floor(Math.random() * candidates.length)];
+        if (skills[sk] < 8) {
+            skills[sk]++;
+            pointsLeft--;
+        }
+    }
+
+    // 6. Focuses (4 total, >= 1 in primary)
+    const focuses = [];
+    const priSug = (arch.suggested_focuses || []).filter(f => (DUNE_DATA.standard_focuses[arch.primary_skill] || []).includes(f));
+    if (priSug.length > 0) {
+        focuses.push({ name: priSug[0], skill: arch.primary_skill });
+    } else {
+        const stdPri = DUNE_DATA.standard_focuses[arch.primary_skill];
+        focuses.push({ name: stdPri[Math.floor(Math.random() * stdPri.length)], skill: arch.primary_skill });
+    }
+
+    // Add second suggested focus
+    const remSug = (arch.suggested_focuses || []).filter(f => !focuses.some(fc => fc.name === f));
+    if (remSug.length > 0) {
+        let fName = remSug[0];
+        let assignedSk = arch.secondary_skill;
+        for (const sk in DUNE_DATA.standard_focuses) {
+            if (DUNE_DATA.standard_focuses[sk].includes(fName)) {
+                assignedSk = sk;
+                break;
+            }
+        }
+        focuses.push({ name: fName, skill: assignedSk });
+    }
+
+    while (focuses.length < 4) {
+        const sk = DUNE_DATA.skills[Math.floor(Math.random() * DUNE_DATA.skills.length)];
+        const stdList = (DUNE_DATA.standard_focuses[sk] || []).filter(f => !focuses.some(fc => fc.name === f));
+        if (stdList.length > 0) {
+            focuses.push({ name: stdList[Math.floor(Math.random() * stdList.length)], skill: sk });
+        }
+    }
+
+    // 7. Talents
+    const talents = [];
+    const takenNames = new Set();
+
+    // Mandatory faction talents
+    if (facInfo && facInfo.mandatory_talents && facInfo.mandatory_talents.length > 0) {
+        if (facInfo.require_all_mandatory) {
+            facInfo.mandatory_talents.forEach(mt => {
+                const tDef = DUNE_DATA.talents[mt];
+                talents.push({ name: mt, specialization: null, description: tDef ? tDef.rules : "" });
+                takenNames.add(mt);
+            });
+        } else {
+            const mt = facInfo.mandatory_talents[Math.floor(Math.random() * facInfo.mandatory_talents.length)];
+            const tDef = DUNE_DATA.talents[mt];
+            talents.push({ name: mt, specialization: null, description: tDef ? tDef.rules : "" });
+            takenNames.add(mt);
+        }
+    }
+
+    // Suggested archetype talent
+    if (arch.suggested_talent && !takenNames.has(arch.suggested_talent)) {
+        const tDef = DUNE_DATA.talents[arch.suggested_talent];
+        if (tDef && (!tDef.faction_requirement || faction.toLowerCase().includes(tDef.faction_requirement.toLowerCase()))) {
+            talents.push({ name: arch.suggested_talent, specialization: null, description: tDef.rules });
+            takenNames.add(arch.suggested_talent);
+        }
+    }
+
+    // Fill remaining
+    const avail = Object.keys(DUNE_DATA.talents).filter(tn => {
+        const t = DUNE_DATA.talents[tn];
+        return !takenNames.has(tn) && (!t.faction_requirement || faction.toLowerCase().includes(t.faction_requirement.toLowerCase()));
+    });
+
+    while (talents.length < 3 && avail.length > 0) {
+        const pickIdx = Math.floor(Math.random() * avail.length);
+        const tn = avail.splice(pickIdx, 1)[0];
+        const tDef = DUNE_DATA.talents[tn];
+        talents.push({ name: tn, specialization: tDef.skill_param ? arch.primary_skill : null, description: tDef.rules });
+        takenNames.add(tn);
+    }
+
+    // 8. Drives [8, 7, 6, 5, 4]
+    const driveOrder = [...DUNE_DATA.drives].sort(() => Math.random() - 0.5);
+    const driveScores = [8, 7, 6, 5, 4];
+    const drives = {};
+    driveOrder.forEach((d, idx) => drives[d] = driveScores[idx]);
+
+    // Statements for top 3
+    const drive_statements = {};
+    const topDrives = Object.keys(drives).filter(d => drives[d] >= 6);
+    topDrives.forEach(d => {
+        const stmts = DUNE_DATA.drive_statements[d] || ["I will uphold my honor."];
+        drive_statements[d] = stmts[Math.floor(Math.random() * stmts.length)];
+    });
+
+    // Ambition (tied to highest drive)
+    const highestDrive = Object.keys(drives).reduce((a, b) => drives[a] > drives[b] ? a : b);
+    const ambPool = DUNE_DATA.ambition_examples[highestDrive] || ["Advance the prestige of my House."];
+    const ambition = ambPool[Math.floor(Math.random() * ambPool.length)];
+
+    // 9. Assets (3 total, >= 1 tangible)
+    const assets = [];
+    let tangiblePicks = ["Kindjal", "Personal Shield", "Stillsuit", "Crysknife", "Blade", "Maula Pistol"];
+    if (faction === "Fremen") tangiblePicks = ["Crysknife", "Stillsuit", "Fremkit"];
+    else if (archetype === "Duelist") tangiblePicks = ["Kindjal", "Personal Shield", "Blade"];
+
+    const firstTan = tangiblePicks[Math.floor(Math.random() * tangiblePicks.length)];
+    const def1 = DUNE_DATA.assets[firstTan];
+    assets.push({ name: def1.name, asset_type: def1.asset_type, quality: def1.quality, traits: [...def1.traits], description: def1.description });
+
+    // Intangible pick
+    const intangibles = Object.keys(DUNE_DATA.assets).filter(k => DUNE_DATA.assets[k].asset_type === "Intangible");
+    const secName = intangibles[Math.floor(Math.random() * intangibles.length)];
+    const def2 = DUNE_DATA.assets[secName];
+    assets.push({ name: def2.name, asset_type: def2.asset_type, quality: def2.quality, traits: [...def2.traits], description: def2.description });
+
+    // 3rd asset
+    const allRem = Object.keys(DUNE_DATA.assets).filter(k => k !== firstTan && k !== secName);
+    const thirdName = allRem[Math.floor(Math.random() * allRem.length)];
+    const def3 = DUNE_DATA.assets[thirdName];
+    assets.push({ name: def3.name, asset_type: def3.asset_type, quality: def3.quality, traits: [...def3.traits], description: def3.description });
+
+    activeChar = {
+        name,
+        player_name: "",
+        concept: `${trait} ${archetype} serving ${house} as ${role}.`,
+        character_type: "Player Character",
+        house,
+        homeworld,
+        house_role: role,
+        house_trait: "",
+        faction,
+        faction_trait: facInfo.additional_trait,
+        archetype,
+        archetype_trait: archetype,
+        personal_trait: trait,
+        skills,
+        focuses,
+        drives,
+        drive_statements,
+        ambition,
+        determination: 1,
+        talents,
+        assets,
+        appearance: "Tailored garments bearing the crest of the House, accompanied by keen weapons.",
+        personality: `${trait}, sharp-minded, and steadfast in purpose.`,
+        relationships: `Answers to the high council of ${house}.`,
+        notes: "Generated Dune 2d20 Character."
+    };
+
+    renderAllWizardFields();
+    updateAudit();
+    renderSheetViews();
+}
+
+function executeRandomGen() {
+    const f = document.getElementById("rand-faction").value || null;
+    const a = document.getElementById("rand-archetype").value || null;
+    const h = document.getElementById("rand-house").value || null;
+    generateRandomPC(f, a, h);
+}
+
+// ==============================================
+// SUPPORTING NPC GENERATOR
+// ==============================================
+function executeNPCGen() {
+    const tier = document.getElementById("npc-tier").value;
+    const role = document.getElementById("npc-role").value;
+    const house = document.getElementById("npc-house").value;
+
+    const first = DUNE_DATA.names.imperial_first[Math.floor(Math.random() * DUNE_DATA.names.imperial_first.length)];
+    const surname = DUNE_DATA.names.imperial_surname[Math.floor(Math.random() * DUNE_DATA.names.imperial_surname.length)];
+    const name = `${first} ${surname}`;
+
+    let primarySk = "Battle";
+    let assetName = "Blade";
+    if (role.includes("Pilot")) { primarySk = "Move"; assetName = "Personal Shield"; }
+    else if (role.includes("Diplomat") || role.includes("Quartermaster")) { primarySk = "Communicate"; assetName = "House Retainer Contract"; }
+    else if (role.includes("Guide")) { primarySk = "Move"; assetName = "Stillsuit"; }
+    else if (role.includes("Cryptographer") || role.includes("Medic")) { primarySk = "Understand"; assetName = "Filmbook & Reader"; }
+    else if (role.includes("Infiltrator")) { primarySk = "Discipline"; assetName = "Bodkin"; }
+
+    const remSkills = DUNE_DATA.skills.filter(s => s !== primarySk).sort(() => Math.random() - 0.5);
+
+    if (tier === "minor") {
+        // Minor NPC: 1 skill at 6, 2 at 5, 2 at 4. 1 focus. 1 asset. Single drive 5.
+        const skills = { [primarySk]: 6, [remSkills[0]]: 5, [remSkills[1]]: 5, [remSkills[2]]: 4, [remSkills[3]]: 4 };
+        const stdF = DUNE_DATA.standard_focuses[primarySk] || ["General"];
+        const aDef = DUNE_DATA.assets[assetName];
+
+        const npcChar = {
+            name: `${name} (${role})`,
+            player_name: "Gamemaster",
+            concept: `Minor Supporting Character: ${role} of ${house}`,
+            character_type: "Minor Supporting Character",
+            house,
+            homeworld: "Unknown",
+            house_role: role,
+            faction: "None (House Retainer / Independent)",
+            archetype: role,
+            personal_trait: role,
+            skills,
+            focuses: [{ name: stdF[0], skill: primarySk }],
+            drives: { "Duty": 5, "Faith": 5, "Justice": 5, "Power": 5, "Truth": 5 },
+            drive_statements: { "Duty": "Single Drive rating (5) for all tests." },
+            ambition: `Faithfully execute orders as ${role}.`,
+            determination: 1,
+            talents: [],
+            assets: [{ name: aDef.name, asset_type: aDef.asset_type, quality: aDef.quality, traits: [...aDef.traits], description: aDef.description }],
+            appearance: "", personality: "", relationships: "", notes: "Minor Supporting NPC"
+        };
+        document.getElementById("npc-sheet-view").innerHTML = generateSheetHTML(npcChar);
+    } else {
+        // Notable NPC: 1 at 7, 1 at 6, 1 at 5, 2 at 4. 2 focuses. 1 talent. 2 assets.
+        const skills = { [primarySk]: 7, [remSkills[0]]: 6, [remSkills[1]]: 5, [remSkills[2]]: 4, [remSkills[3]]: 4 };
+        const std1 = DUNE_DATA.standard_focuses[primarySk] || ["Tactics"];
+        const std2 = DUNE_DATA.standard_focuses[remSkills[0]] || ["Composure"];
+        const aDef1 = DUNE_DATA.assets[assetName];
+        const aDef2 = DUNE_DATA.assets["Personal Shield"];
+
+        const tDef = DUNE_DATA.talents["Bold"];
+
+        const npcChar = {
+            name: `${name} (Notable ${role})`,
+            player_name: "Gamemaster",
+            concept: `Notable Supporting Character: Veteran ${role} of ${house}`,
+            character_type: "Notable Supporting Character",
+            house,
+            homeworld: "Unknown",
+            house_role: role,
+            faction: "None (House Retainer / Independent)",
+            archetype: role,
+            personal_trait: "Veteran",
+            skills,
+            focuses: [{ name: std1[0], skill: primarySk }, { name: std2[0], skill: remSkills[0] }],
+            drives: { "Duty": 8, "Faith": 7, "Justice": 6, "Power": 5, "Truth": 5 },
+            drive_statements: { "Duty": "I stand resolute in service." },
+            ambition: `Advance the prestige of ${house}.`,
+            determination: 1,
+            talents: [{ name: "Bold", specialization: primarySk, description: tDef.rules }],
+            assets: [
+                { name: aDef1.name, asset_type: aDef1.asset_type, quality: aDef1.quality, traits: [...aDef1.traits], description: aDef1.description },
+                { name: aDef2.name, asset_type: aDef2.asset_type, quality: aDef2.quality, traits: [...aDef2.traits], description: aDef2.description }
+            ],
+            appearance: "", personality: "", relationships: "", notes: "Notable Supporting NPC (Cost: 3 Momentum/Threat)"
+        };
+        document.getElementById("npc-sheet-view").innerHTML = generateSheetHTML(npcChar);
+    }
+}
+
+// ==============================================
+// EXPORT & PRINT UTILITIES
+// ==============================================
+function printSheet() {
+    window.print();
+}
+
+function downloadJSON() {
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(activeChar, null, 2));
+    const a = document.createElement("a");
+    a.href = dataStr;
+    a.download = `${activeChar.name.replace(/\s+/g, "_")}.json`;
+    a.click();
+}
+
+function downloadMarkdown() {
+    let md = `# ${activeChar.name}\n*${activeChar.concept}*\n\n`;
+    md += `## Identity & House\n- **House:** ${activeChar.house} (${activeChar.homeworld})\n- **Role:** ${activeChar.house_role}\n- **Archetype:** ${activeChar.archetype}\n- **Faction:** ${activeChar.faction}\n\n`;
+    md += `## Ambition\n> ${activeChar.ambition}\n\n`;
+    md += `## Skills & Focuses\n| Skill | Score | Focuses |\n| :--- | :---: | :--- |\n`;
+    DUNE_DATA.skills.forEach(s => {
+        const val = activeChar.skills[s] || 4;
+        const fl = (activeChar.focuses || []).filter(f => f.skill === s).map(f => f.name).join(", ");
+        md += `| **${s}** | **${val}** | ${fl || "—"} |\n`;
+    });
+    md += `\n## Drives\n| Drive | Score | Statement |\n| :--- | :---: | :--- |\n`;
+    for (const d in activeChar.drives) {
+        md += `| **${d}** | **${activeChar.drives[d]}** | *"${activeChar.drive_statements[d] || '—'}"* |\n`;
+    }
+    md += `\n## Talents\n`;
+    (activeChar.talents || []).forEach(t => {
+        md += `### ${t.name}${t.specialization ? ` (${t.specialization})` : ''}\n${t.description}\n\n`;
+    });
+    md += `## Assets\n`;
+    (activeChar.assets || []).forEach(a => {
+        md += `- **${a.name}** (${a.asset_type}) [Quality ${a.quality}]: *${a.description}*\n`;
+    });
+
+    const dataStr = "data:text/markdown;charset=utf-8," + encodeURIComponent(md);
+    const a = document.createElement("a");
+    a.href = dataStr;
+    a.download = `${activeChar.name.replace(/\s+/g, "_")}.md`;
+    a.click();
+}
+
+function downloadHTML() {
+    const fullHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${activeChar.name} - Dune Character Sheet</title><style>${document.querySelector("style").innerHTML}</style></head><body><div class="sheet-view">${generateSheetHTML(activeChar)}</div></body></html>`;
+    const dataStr = "data:text/html;charset=utf-8," + encodeURIComponent(fullHtml);
+    const a = document.createElement("a");
+    a.href = dataStr;
+    a.download = `${activeChar.name.replace(/\s+/g, "_")}_sheet.html`;
+    a.click();
+}
+
+function importJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            activeChar = JSON.parse(e.target.result);
+            renderAllWizardFields();
+            updateAudit();
+            renderSheetViews();
+            alert("Character loaded successfully into active session!");
+            switchMode("wizard");
+        } catch (err) {
+            alert("Error parsing JSON file: " + err);
+        }
+    };
+    reader.readAsText(file);
+}
+</script>
+
+</body>
+</html>
