@@ -1,5 +1,6 @@
 """Script to generate the standalone HTML Dune Character Generator application."""
 
+import base64
 import json
 from pathlib import Path
 
@@ -8,12 +9,26 @@ data_path = Path("src/dune_data.json")
 with open(data_path, "r", encoding="utf-8") as f:
     dune_data_json = f.read()
 
+# Load image assets as Base64 Data URIs
+icon_path = Path("assets/icon.jpg")
+icon_data_uri = ""
+if icon_path.exists():
+    with open(icon_path, "rb") as f:
+        icon_data_uri = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
+
+bg_path = Path("assets/background.jpg")
+bg_data_uri = ""
+if bg_path.exists():
+    with open(bg_path, "rb") as f:
+        bg_data_uri = "data:image/jpeg;base64," + base64.b64encode(f.read()).decode("utf-8")
+
 html_template = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dune: Adventures in the Imperium — Character Generator</title>
+<link rel="icon" type="image/jpeg" href="__ICON_DATA_URI__">
 <style>
     :root {
         --sand-bg: #f7f2e7;
@@ -42,6 +57,13 @@ html_template = """<!DOCTYPE html>
     body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Palatino Linotype", Georgia, serif;
         background-color: var(--sand-bg);
+        background-image: 
+            linear-gradient(rgba(247, 242, 231, 0.88), rgba(247, 242, 231, 0.92)),
+            url('__BG_DATA_URI__');
+        background-attachment: fixed;
+        background-position: center center;
+        background-size: cover;
+        background-repeat: no-repeat;
         color: var(--text-main);
         line-height: 1.5;
         padding: 0;
@@ -51,45 +73,46 @@ html_template = """<!DOCTYPE html>
     /* Top Imperial Header */
     .imperial-banner {
         background: linear-gradient(135deg, #18191b 0%, #2f251d 100%);
-        border-bottom: 3px solid var(--spice-gold);
+        border-bottom: 2.5px solid var(--spice-gold);
         color: #f5eedc;
-        padding: 20px 32px;
+        padding: 10px 24px;
         display: flex;
         justify-content: space-between;
         align-items: center;
         flex-wrap: wrap;
-        gap: 16px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        gap: 12px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.15);
     }
 
     .banner-title h1 {
         font-family: Georgia, "Palatino Linotype", serif;
         color: #e5b95c;
-        font-size: 1.8rem;
-        letter-spacing: 1.5px;
+        font-size: 1.35rem;
+        letter-spacing: 1.2px;
         text-transform: uppercase;
         margin: 0;
     }
 
     .banner-title p {
         color: #c7b9a5;
-        font-size: 0.9rem;
-        margin-top: 4px;
+        font-size: 0.8rem;
+        margin-top: 2px;
+        margin-bottom: 0;
         font-style: italic;
     }
 
     .banner-actions {
         display: flex;
-        gap: 10px;
+        gap: 8px;
     }
 
     .btn {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 8px 16px;
+        padding: 6px 14px;
         border-radius: 6px;
-        font-size: 0.88rem;
+        font-size: 0.84rem;
         font-weight: 600;
         cursor: pointer;
         border: 1px solid transparent;
@@ -127,15 +150,16 @@ html_template = """<!DOCTYPE html>
 
     /* Main Container & Layout */
     .app-container {
-        max-width: 1300px;
-        margin: 24px auto;
-        padding: 0 20px;
+        max-width: 1440px;
+        margin: 12px auto;
+        padding: 0 16px;
         display: grid;
-        grid-template-columns: 1fr 340px;
-        gap: 24px;
+        grid-template-columns: minmax(0, 1fr) 280px;
+        gap: 16px;
+        align-items: start;
     }
 
-    @media (max-width: 1024px) {
+    @media (max-width: 860px) {
         .app-container {
             grid-template-columns: 1fr;
         }
@@ -144,20 +168,20 @@ html_template = """<!DOCTYPE html>
     /* Mode Navigation Tabs */
     .nav-tabs {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         background: #eae2d3;
-        padding: 6px;
+        padding: 5px;
         border-radius: 8px;
-        margin-bottom: 20px;
+        margin-bottom: 12px;
         border: 1px solid var(--border-color);
         overflow-x: auto;
     }
 
     .nav-tab {
-        padding: 8px 18px;
+        padding: 6px 14px;
         border-radius: 6px;
         font-weight: 600;
-        font-size: 0.9rem;
+        font-size: 0.84rem;
         cursor: pointer;
         border: none;
         background: transparent;
@@ -410,23 +434,89 @@ html_template = """<!DOCTYPE html>
         border-color: #a5d8ff;
     }
 
+    /* Live Audit Quick Bar (Top of Main Panel) */
+    .live-audit-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+        background: #faf6ef;
+        border: 1px solid #e2d4c0;
+        border-left: 4px solid var(--spice-gold);
+        border-radius: 6px;
+        padding: 6px 12px;
+        margin-bottom: 12px;
+        font-size: 0.82rem;
+    }
+
+    .live-audit-metrics {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .live-audit-metric {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--spice-dark);
+        font-weight: 600;
+        font-size: 0.78rem;
+    }
+
+    .live-audit-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.75rem;
+    }
+
     /* Sidebar Checklist */
     .audit-card {
         background: #ffffff;
         border: 1px solid var(--border-color);
         border-radius: 8px;
-        padding: 18px;
+        padding: 10px 12px;
         position: sticky;
-        top: 20px;
+        top: 10px;
         box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
+    }
+
+    .audit-card::-webkit-scrollbar {
+        width: 5px;
+    }
+    .audit-card::-webkit-scrollbar-thumb {
+        background: #d8cbb8;
+        border-radius: 3px;
+    }
+
+    .audit-title {
+        font-family: Georgia, serif;
+        color: var(--spice-dark);
+        font-size: 0.95rem;
+        font-weight: bold;
+        margin-bottom: 6px;
+        border-bottom: 1.5px solid #eae2d3;
+        padding-bottom: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     .audit-item {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        font-size: 0.84rem;
-        padding: 6px 0;
+        font-size: 0.76rem;
+        line-height: 1.25;
+        padding: 2.5px 0;
         border-bottom: 1px solid #f2ece1;
     }
 
@@ -435,16 +525,22 @@ html_template = """<!DOCTYPE html>
     }
 
     .audit-status {
-        font-weight: bold;
-        font-size: 0.9rem;
+        font-weight: 700;
+        font-size: 0.68rem;
+        padding: 1.5px 6px;
+        border-radius: 10px;
+        white-space: nowrap;
+        margin-left: 6px;
     }
 
     .status-pass {
-        color: var(--success);
+        background: #e6f4ea;
+        color: #137333;
     }
 
     .status-fail {
-        color: var(--danger);
+        background: #fce8e6;
+        color: #c5221f;
     }
 
     /* Printable Sheet Container */
@@ -541,9 +637,12 @@ html_template = """<!DOCTYPE html>
 
 <!-- Imperial Top Banner -->
 <header class="imperial-banner">
-    <div class="banner-title">
-        <h1>Dune: Adventures in the Imperium</h1>
-        <p>2d20 System Character Generator & Sheet Architect</p>
+    <div class="banner-title" style="display: flex; align-items: center; gap: 14px;">
+        <img src="__ICON_DATA_URI__" alt="Dune Crest" style="width: 46px; height: 46px; border-radius: 50%; border: 2px solid var(--spice-gold); box-shadow: 0 0 10px rgba(200, 138, 56, 0.45); object-fit: cover; flex-shrink: 0;">
+        <div>
+            <h1>Dune: Adventures in the Imperium</h1>
+            <p>2d20 System Character Generator & Sheet Architect</p>
+        </div>
     </div>
     <div class="banner-actions btn-no-print">
         <button class="btn btn-gold" onclick="generateRandomPC()">🎲 Instant Random PC</button>
@@ -561,7 +660,11 @@ html_template = """<!DOCTYPE html>
             <button class="nav-tab" onclick="switchMode('npc')">👥 Supporting NPC Generator</button>
             <button class="nav-tab" onclick="switchMode('sheet')">📄 Character Sheet Preview</button>
             <button class="nav-tab" onclick="switchMode('vault')">📂 Character Vault</button>
+            <button class="nav-tab" onclick="switchMode('about')">ℹ️ About & Credits</button>
         </div>
+
+        <!-- Live Top Rule Audit Quick-Bar (Always fully visible on page load) -->
+        <div id="live-audit-banner" class="live-audit-bar btn-no-print"></div>
 
         <!-- ============================================== -->
         <!-- MODE 1: CHARACTER CREATOR WIZARD -->
@@ -897,16 +1000,81 @@ html_template = """<!DOCTYPE html>
                 </div>
             </div>
         </div>
+
+        <!-- ============================================== -->
+        <!-- MODE 6: ABOUT, CREDITS & LICENSE -->
+        <!-- ============================================== -->
+        <div id="mode-about" style="display: none;">
+            <div class="card">
+                <div class="card-title">ℹ️ About Dune Character Generator</div>
+                <p style="font-size: 0.95rem; margin-bottom: 14px; line-height: 1.6;">
+                    The <strong>Dune: Adventures in the Imperium Character Generator & Sheet Architect</strong> is an interactive companion application designed for players and gamemasters of Modiphius Entertainment's tabletop roleplaying game <em>Dune: Adventures in the Imperium</em> (powered by the 2d20 System).
+                </p>
+                <div style="background: #faf7f0; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; margin-bottom: 20px;">
+                    <h4 style="font-family: Georgia, serif; color: var(--spice-dark); margin-bottom: 8px;">🌟 System & Design Features</h4>
+                    <ul style="padding-left: 20px; font-size: 0.88rem; line-height: 1.7; color: var(--text-main);">
+                        <li><strong>Complete Planned Creation Pipeline (Steps 1–8)</strong>: Concept, Archetype, Skills, Focuses, Talents, Drives & Statements, Starting Assets, Ambition & Details.</li>
+                        <li><strong>Official 2d20 Rulebook Compliance</strong>: Real-time validation audit verifying skill points total (28 points), bounds (4–8), primary/secondary baselines, mandatory faction talents, unique drive assignments ([8, 7, 6, 5, 4]), and starting assets.</li>
+                        <li><strong>Comprehensive Canonical Library</strong>: 20 archetypes, 5 faction templates, 55 talents with full rules text, standard focuses across all 5 skills, and tangible/intangible assets.</li>
+                        <li><strong>Smart Random PC & Supporting NPC Generators</strong>: Instant generation of fully compliant player characters and supporting characters (Minor and Notable NPCs).</li>
+                        <li><strong>Multi-Format Exporters</strong>: Standalone printable HTML sheet with <code>@media print</code> formatting, Markdown, and JSON.</li>
+                    </ul>
+                </div>
+
+                <div class="grid-2" style="margin-bottom: 20px;">
+                    <div style="background: #faf7f0; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px;">
+                        <h4 style="font-family: Georgia, serif; color: var(--spice-dark); margin-bottom: 8px;">⚖️ Copyrights & Trademarks</h4>
+                        <p style="font-size: 0.84rem; line-height: 1.6; color: var(--text-main); margin-bottom: 8px;">
+                            <strong>Dune: Adventures in the Imperium</strong> is published by <strong>Modiphius Entertainment</strong> and developed in partnership with <strong>Legendary Entertainment</strong>.
+                        </p>
+                        <p style="font-size: 0.84rem; line-height: 1.6; color: var(--text-main); margin-bottom: 8px;">
+                            <strong>Dune</strong> is a trademark or registered trademark of <strong>Herbert Properties LLC</strong>. All setting lore, faction names, character concepts, and related intellectual property are © Herbert Properties LLC and Legendary Entertainment.
+                        </p>
+                        <p style="font-size: 0.84rem; line-height: 1.6; color: var(--text-muted); font-style: italic;">
+                            <strong>Unofficial Fan Companion</strong>: This software is an independent, non-commercial fan-made utility created solely for personal recreational use. It is not affiliated with, produced by, or endorsed by Modiphius Entertainment, Legendary Entertainment, or Herbert Properties LLC.
+                        </p>
+                    </div>
+
+                    <div style="background: #faf7f0; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px;">
+                        <h4 style="font-family: Georgia, serif; color: var(--spice-dark); margin-bottom: 8px;">👥 Credits & Acknowledgments</h4>
+                        <p style="font-size: 0.84rem; line-height: 1.6; color: var(--text-main); margin-bottom: 8px;">
+                            <strong>Frank Herbert</strong>: For creating the masterpiece of the Dune universe.
+                        </p>
+                        <p style="font-size: 0.84rem; line-height: 1.6; color: var(--text-main); margin-bottom: 8px;">
+                            <strong>Modiphius Entertainment Team</strong>: Nathan Dowdell, Simon Berman, Jack Norris, Jason Durall, Chris Birch, and the writers, editors, and artists who crafted the 2d20 System adaptation of Dune.
+                        </p>
+                    </div>
+                </div>
+
+                <div style="background: #fdfaf3; border: 1px solid var(--border-gold); border-radius: 6px; padding: 16px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <h4 style="font-family: Georgia, serif; color: var(--spice-dark); margin: 0;">📄 License: Creative Commons Attribution-NonCommercial 4.0 International</h4>
+                        <span class="badge" style="background: #eed8a1; color: #5c3b09;">CC BY-NC 4.0</span>
+                    </div>
+                    <p style="font-size: 0.84rem; line-height: 1.6; color: var(--text-main); margin-bottom: 8px;">
+                        This fan-made project is distributed under the terms of the <strong>Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)</strong> license.
+                    </p>
+                    <ul style="padding-left: 20px; font-size: 0.82rem; line-height: 1.6; color: var(--text-muted); margin-bottom: 10px;">
+                        <li><strong>Share</strong> — You are free to copy and redistribute the material in any medium or format.</li>
+                        <li><strong>Adapt</strong> — You are free to remix, transform, and build upon the material.</li>
+                        <li><strong>Attribution</strong> — You must give appropriate credit, provide a link to the license, and indicate if changes were made.</li>
+                        <li><strong>NonCommercial</strong> — You may <em>not</em> use the material for commercial purposes or financial gain.</li>
+                    </ul>
+                    <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank" rel="noopener noreferrer" style="color: var(--spice-ember); font-weight: bold; font-size: 0.84rem; text-decoration: none;">View Full Creative Commons CC BY-NC 4.0 License Terms &rarr;</a>
+                </div>
+            </div>
+        </div>
     </main>
 
     <!-- Sidebar Compliance Audit Panel -->
     <aside class="btn-no-print">
         <div class="audit-card">
-            <h3 style="font-family: Georgia, serif; color: var(--spice-dark); font-size: 1.1rem; margin-bottom: 12px; border-bottom: 1.5px solid #eae2d3; padding-bottom: 6px;">
-                ⚖️ 2d20 Rulebook Audit
-            </h3>
+            <div class="audit-title">
+                <span>⚖️ 2d20 Rulebook Audit</span>
+                <span id="audit-badge-pill" class="audit-status status-pass">PASS</span>
+            </div>
             <div id="audit-list"></div>
-            <div id="audit-summary" style="margin-top: 14px; text-align: center; font-weight: bold; font-size: 0.95rem;"></div>
+            <div id="audit-summary" style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #f2ece1; text-align: center; font-weight: bold; font-size: 0.82rem;"></div>
         </div>
     </aside>
 </div>
@@ -1123,7 +1291,7 @@ function updateChar(prop, val) {
 
 // Navigation between Modes
 function switchMode(modeName) {
-    const modes = ["wizard", "random", "npc", "sheet", "vault"];
+    const modes = ["wizard", "random", "npc", "sheet", "vault", "about"];
     modes.forEach(m => {
         const el = document.getElementById("mode-" + m);
         if (el) el.style.display = (m === modeName) ? "block" : "none";
@@ -1679,11 +1847,45 @@ function updateAudit() {
         list.appendChild(div);
     }
 
+    const failCount = Object.values(checks).filter(p => !p).length;
+
     const summary = document.getElementById("audit-summary");
-    if (allPass) {
-        summary.innerHTML = '<span style="color: var(--success);">✓ 100% Rulebook Compliant</span>';
-    } else {
-        summary.innerHTML = '<span style="color: var(--danger);">✗ Validation Issues Detected</span>';
+    if (summary) {
+        if (allPass) {
+            summary.innerHTML = '<span style="color: var(--success);">✓ 100% Rulebook Compliant</span>';
+        } else {
+            summary.innerHTML = `<span style="color: var(--danger);">✗ ${failCount} Rule Issue${failCount > 1 ? 's' : ''} Detected</span>`;
+        }
+    }
+
+    const badgePill = document.getElementById("audit-badge-pill");
+    if (badgePill) {
+        badgePill.className = `audit-status ${allPass ? 'status-pass' : 'status-fail'}`;
+        badgePill.textContent = allPass ? 'PASS' : `${failCount} ISSUE${failCount > 1 ? 'S' : ''}`;
+    }
+
+    // Update Top Live Audit Quick Bar
+    const liveBar = document.getElementById("live-audit-banner");
+    if (liveBar) {
+        const badgeClass = allPass ? "status-pass" : "status-fail";
+        const badgeText = allPass ? "✓ 100% Rulebook Compliant" : `✗ ${failCount} Issue${failCount > 1 ? 's' : ''} (${errors.length > 0 ? errors[0] : 'Incomplete Requirements'})`;
+        const skillClass = (skillSum === 28) ? "status-pass" : "status-fail";
+        const focClass = (activeChar.focuses.length === 4) ? "status-pass" : "status-fail";
+        const talClass = (activeChar.talents.length === 3) ? "status-pass" : "status-fail";
+        const astClass = (activeChar.assets.length === 3 && tangibleCount >= 1) ? "status-pass" : "status-fail";
+
+        liveBar.innerHTML = `
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-weight: 700; color: var(--spice-dark);">⚖️ Rules Audit:</span>
+                <span class="live-audit-badge ${badgeClass}">${badgeText}</span>
+            </div>
+            <div class="live-audit-metrics">
+                <span class="live-audit-metric">Skills: <span class="audit-status ${skillClass}" style="margin-left: 2px;">${skillSum}/28</span></span>
+                <span class="live-audit-metric">Focuses: <span class="audit-status ${focClass}" style="margin-left: 2px;">${activeChar.focuses.length}/4</span></span>
+                <span class="live-audit-metric">Talents: <span class="audit-status ${talClass}" style="margin-left: 2px;">${activeChar.talents.length}/3</span></span>
+                <span class="live-audit-metric">Assets: <span class="audit-status ${astClass}" style="margin-left: 2px;">${activeChar.assets.length}/3</span></span>
+            </div>
+        `;
     }
 }
 
@@ -2220,8 +2422,13 @@ function importJSON(event) {
 </html>
 """
 
-# Replace the placeholder with the actual JSON string
-final_html = html_template.replace("__DUNE_DATA_PLACEHOLDER__", dune_data_json)
+# Replace placeholders with actual data
+final_html = (
+    html_template
+    .replace("__DUNE_DATA_PLACEHOLDER__", dune_data_json)
+    .replace("__ICON_DATA_URI__", icon_data_uri)
+    .replace("__BG_DATA_URI__", bg_data_uri)
+)
 
 # Write to root index.html
 Path("index.html").write_text(final_html, encoding="utf-8")
