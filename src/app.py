@@ -1,5 +1,6 @@
 """Streamlit Web Application for Dune: Adventures in the Imperium Character Generator."""
 
+import base64
 import sys
 from pathlib import Path
 
@@ -27,62 +28,93 @@ from dune_char_gen.exporters.json_exporter import character_to_json, character_f
 from dune_char_gen.exporters.markdown_exporter import character_to_markdown
 from dune_char_gen.exporters.html_exporter import character_to_html
 
+# Asset paths & Base64 encoders
+assets_dir = Path(__file__).resolve().parent.parent / "assets"
+icon_path = assets_dir / "icon.jpg"
+bg_path = assets_dir / "background.jpg"
+
+icon_b64 = ""
+if icon_path.exists():
+    with open(icon_path, "rb") as f:
+        icon_b64 = base64.b64encode(f.read()).decode("utf-8")
+
+bg_b64 = ""
+if bg_path.exists():
+    with open(bg_path, "rb") as f:
+        bg_b64 = base64.b64encode(f.read()).decode("utf-8")
+
 # Set page configuration
 st.set_page_config(
     page_title="Dune: Adventures in the Imperium - Character Generator",
-    page_icon="⚔️",
+    page_icon=str(icon_path) if icon_path.exists() else "⚔️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Custom Dune-themed styling
-st.markdown("""
+# Custom Dune-themed styling with background and typography
+bg_css = f"""
+    background-image: 
+        linear-gradient(rgba(252, 249, 242, 0.88), rgba(252, 249, 242, 0.92)),
+        url('data:image/jpeg;base64,{bg_b64}');
+    background-attachment: fixed;
+    background-position: center center;
+    background-size: cover;
+    background-repeat: no-repeat;
+""" if bg_b64 else ""
+
+st.markdown(f"""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Fauna+One&display=swap');
     
-    .stApp {
+    .stApp {{
         background-color: #fcf9f2;
+        {bg_css}
         color: #2b2825;
-    }
+    }}
     
-    h1, h2, h3 {
+    h1, h2, h3 {{
         font-family: 'Cinzel', serif !important;
         color: #8b4513 !important;
         letter-spacing: 1px;
-    }
+    }}
     
-    .dune-header {
+    .dune-header {{
         background: linear-gradient(135deg, #1b1c1e 0%, #3a2e22 100%);
         color: #f7e8aa;
-        padding: 24px;
+        padding: 12px 20px;
         border-radius: 8px;
-        margin-bottom: 24px;
-        border-bottom: 3px solid #c88a38;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.15);
-    }
+        margin-bottom: 14px;
+        border-bottom: 2.5px solid #c88a38;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }}
     
-    .dune-header h1 {
+    .dune-header h1 {{
         color: #e5b95c !important;
         margin: 0;
-        font-size: 2.2rem;
-    }
+        font-size: 1.5rem;
+    }}
     
-    .dune-header p {
+    .dune-header p {{
         color: #d1c5b4;
-        margin: 4px 0 0 0;
+        margin: 2px 0 0 0;
+        font-size: 0.85rem;
         font-style: italic;
-    }
+    }}
     
-    .stat-card {
-        background: #ffffff;
+    .stat-card {{
+        background: rgba(255, 255, 255, 0.92);
+        backdrop-filter: blur(4px);
         border: 1px solid #dcd2bf;
         border-radius: 6px;
         padding: 16px;
         margin-bottom: 12px;
         box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-    }
+    }}
     
-    .badge-pill {
+    .badge-pill {{
         display: inline-block;
         padding: 3px 10px;
         border-radius: 12px;
@@ -92,17 +124,17 @@ st.markdown("""
         color: #5c4328;
         border: 1px solid #c88a38;
         margin-right: 6px;
-    }
+    }}
     
-    .validation-pass {
+    .validation-pass {{
         color: #2e7d32;
         font-weight: bold;
-    }
+    }}
     
-    .validation-fail {
+    .validation-fail {{
         color: #c62828;
         font-weight: bold;
-    }
+    }}
 </style>
 """, unsafe_allow_html=True)
 
@@ -112,15 +144,27 @@ if "character" not in st.session_state:
 
 char: Character = st.session_state["character"]
 
-# Header banner
-st.markdown("""
+# Header banner with App Icon
+header_icon_html = f'<img src="data:image/jpeg;base64,{icon_b64}" style="width: 48px; height: 48px; border-radius: 50%; border: 2px solid #c88a38; box-shadow: 0 0 10px rgba(200, 138, 56, 0.45); object-fit: cover; flex-shrink: 0;">' if icon_b64 else ''
+
+st.markdown(f"""
 <div class="dune-header">
-    <h1>DUNE: ADVENTURES IN THE IMPERIUM</h1>
-    <p>2d20 Roleplaying Game — Character Generator & Sheet Manager</p>
+    {header_icon_html}
+    <div>
+        <h1>DUNE: ADVENTURES IN THE IMPERIUM</h1>
+        <p>2d20 Roleplaying Game — Character Generator & Sheet Manager</p>
+    </div>
 </div>
 """, unsafe_allow_html=True)
 
 # Sidebar Navigation
+if icon_b64:
+    st.sidebar.markdown(f"""
+    <div style="text-align: center; margin-bottom: 12px;">
+        <img src="data:image/jpeg;base64,{icon_b64}" style="width: 80px; height: 80px; border-radius: 50%; border: 2.5px solid #c88a38; box-shadow: 0 2px 10px rgba(0,0,0,0.2); object-fit: cover;">
+    </div>
+    """, unsafe_allow_html=True)
+
 st.sidebar.title("Navigation & Tools")
 mode = st.sidebar.radio(
     "Mode",
@@ -129,6 +173,7 @@ mode = st.sidebar.radio(
         "🎲 Instant Random Character",
         "👥 Supporting NPC Generator",
         "📂 Character Vault & Export",
+        "ℹ️ About & Credits",
     ],
     index=0,
 )
@@ -149,6 +194,25 @@ with st.sidebar.expander("⚖️ Rulebook Compliance Audit", expanded=True):
         st.error("\n".join([f"• {e}" for e in report.errors]))
     if report.warnings:
         st.warning("\n".join([f"• {w}" for w in report.warnings]))
+
+# Top Rule Audit Bar (Always visible on page load)
+skill_sum = sum(char.skills.values())
+focus_cnt = len(char.focuses)
+talent_cnt = len(char.talents)
+asset_cnt = len(char.assets)
+status_badge = '<span class="validation-pass">✓ 100% Rulebook Compliant</span>' if report.is_valid else f'<span class="validation-fail">✗ {len(report.errors)} Rule Issue(s) Detected</span>'
+
+st.markdown(f"""
+<div style="background: #faf6ef; border: 1px solid #e2d4c0; border-left: 4px solid #c88a38; border-radius: 6px; padding: 7px 14px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-size: 0.85rem;">
+    <div><strong>⚖️ Rules Audit:</strong> {status_badge}</div>
+    <div style="color: #5c4328; font-size: 0.82rem;">
+        <strong>Skills:</strong> {skill_sum}/28 &nbsp;|&nbsp;
+        <strong>Focuses:</strong> {focus_cnt}/4 &nbsp;|&nbsp;
+        <strong>Talents:</strong> {talent_cnt}/3 &nbsp;|&nbsp;
+        <strong>Assets:</strong> {asset_cnt}/3
+    </div>
+</div>
+""", unsafe_allow_html=True)
 
 # -------------------------------------------------------------
 # MODE 1: CHARACTER CREATOR WIZARD
@@ -728,3 +792,55 @@ elif mode == "📂 Character Vault & Export":
         st.download_button("📝 Markdown File (.md)", character_to_markdown(char), f"{char.name}.md", "text/markdown", use_container_width=True)
     with c3:
         st.download_button("💾 JSON Save File (.json)", character_to_json(char), f"{char.name}.json", "application/json", use_container_width=True)
+
+# -------------------------------------------------------------
+# MODE 5: ABOUT & CREDITS
+# -------------------------------------------------------------
+elif mode == "ℹ️ About & Credits":
+    st.subheader("ℹ️ About the Application")
+    st.markdown("""
+    Welcome to the **Dune: Adventures in the Imperium Character Generator & Sheet Architect**!
+    
+    This application is an interactive digital companion designed for players and gamemasters of Modiphius Entertainment's tabletop roleplaying game ***Dune: Adventures in the Imperium*** (2d20 System).
+    
+    ### 🌟 Core Features
+    - **Step-by-Step Character Creation**: Implements the official planned creation pipeline (Steps 1–8: Concept, Archetype, Skills, Focuses, Talents, Drives & Statements, Assets, and Ambition).
+    - **Official 2d20 Rulebook Compliance**: Real-time validation checking skill totals (28 points), bounds (4–8), primary/secondary baselines, mandatory faction talents, drive rankings (`[8, 7, 6, 5, 4]`), and starting assets.
+    - **Comprehensive Data Library**: All 20 canonical archetypes, 5 faction templates, 55 talents with rules text, standard focuses, and assets.
+    - **Random PC & NPC Generators**: One-click generation of fully compliant player characters and supporting characters (*Minor* and *Notable* NPCs).
+    - **Multi-Format Exporting**: Save to JSON, export to Markdown, and print/save to styled PDF character sheets.
+    """)
+
+    st.markdown("---")
+    col_c1, col_c2 = st.columns(2)
+
+    with col_c1:
+        st.subheader("⚖️ Copyrights & Trademarks")
+        st.markdown("""
+        - ***Dune: Adventures in the Imperium*** is published by **Modiphius Entertainment** in partnership with **Legendary Entertainment**.
+        - **Dune** is a trademark or registered trademark of **Herbert Properties LLC**. All setting lore, faction names, character concepts, and related intellectual property are © Herbert Properties LLC and Legendary Entertainment.
+        - **Unofficial Fan Companion**: This software application is an independent, fan-made utility created solely for personal recreational use. It is **not** affiliated with, produced by, or endorsed by Modiphius Entertainment, Legendary Entertainment, or Herbert Properties LLC.
+        """)
+
+    with col_c2:
+        st.subheader("👥 Credits & Acknowledgments")
+        st.markdown("""
+        - **Frank Herbert**: For imagining the breathtaking, intricate universe of Arrakis and the Imperium.
+        - **Modiphius Entertainment Team**: Nathan Dowdell, Simon Berman, Jack Norris, Jason Durall, Chris Birch, and the entire writing and design team behind the 2d20 System adaptation of Dune.
+        """)
+
+    st.markdown("---")
+    st.subheader("📄 License: Creative Commons (CC BY-NC 4.0)")
+    st.markdown("""
+    This fan project is made available under the terms of the **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)** license.
+    
+    - **You are free to**:
+      - **Share**: Copy and redistribute the material in any medium or format.
+      - **Adapt**: Remix, transform, and build upon the material.
+    - **Under the following terms**:
+      - **Attribution**: You must give appropriate credit, provide a link to the license, and indicate if changes were made.
+      - **NonCommercial**: You may **not** use this material for commercial purposes or financial gain.
+    
+    For full legal code and details, visit [Creative Commons CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/).
+    """)
+
